@@ -158,6 +158,14 @@ Live full analysis makes external model calls and may incur cost.
 
 Each full analysis and replay has a unique `analysis_run_id`, configuration snapshot, stage timings, usage metadata, candidate snapshots, validation findings, scoring output, deduplication relationships, and final ranking state. Extraction batches retain input turn IDs, raw structured responses, parse/filter counts, retries, and token usage. The UI exposes run history, candidate diagnostics, exact evidence, supporting evidence, adjacent context, and separate Validated/Needs review counts.
 
+## Final-signal export schema
+
+CSV and JSONL exports use the same latest-completed-run, canonical `final_signals` collection shown by the UI. Drivers are emitted before blockers, followed by ascending rank and final-signal ID. Duplicate candidates are attached as supporting evidence and never become independent export records.
+
+CSV preserves its original eight columns first, then appends `analysis_run_id`, `validation_verdict`, `business_score`, `selection_reason`, `supporting_evidence`, `adjacent_context`, `final_signal_id`, and `canonical`. Supporting evidence and adjacent context are JSON arrays serialized into single properly quoted cells. The legacy numbered `supporting_quote_N` and `supporting_timestamp_N` columns remain as deprecated compatibility fields; `supporting_evidence` is authoritative.
+
+JSONL uses export version `1.0` and writes one complete JSON object per physical line. Scores remain numeric, verdicts use `pass` or `needs_review`, and absent supporting evidence/context is represented by empty arrays.
+
 ## Known limitations
 
 - Model output is probabilistic; extraction and classification are not guaranteed perfect.
