@@ -20,7 +20,6 @@ export function AppLayout({ children }: PropsWithChildren) {
               <h1>SignalBridge</h1>
               <span>Meeting Intelligence</span>
             </div>
-            <span className="internal-badge">Internal</span>
           </div>
           <nav className="app-nav" aria-label="Primary navigation">
             <NavLink
@@ -29,7 +28,7 @@ export function AppLayout({ children }: PropsWithChildren) {
               aria-current={transcriptsActive ? 'page' : undefined}
               className={'app-nav__link' + (transcriptsActive ? ' active' : '')}
             >
-              Transcript workspace
+              <span className="app-nav__insights-label">Insights</span>
             </NavLink>
             <NavLink
               to="/upload"
@@ -38,7 +37,8 @@ export function AppLayout({ children }: PropsWithChildren) {
                 (isActive ? ' active' : '')
               }
             >
-              Upload transcript
+              <span className="app-nav__upload-label">Upload transcript</span>
+              <span className="app-nav__upload-label--compact" aria-hidden="true">Upload</span>
             </NavLink>
           </nav>
         </div>
@@ -48,8 +48,7 @@ export function AppLayout({ children }: PropsWithChildren) {
       </main>
       <footer className="app-footer">
         <div>
-          SignalBridge supports internal analysis and decision-making. Results
-          should be reviewed before use.
+          AI-discovered business insights, grounded in transcript evidence.
         </div>
       </footer>
     </div>

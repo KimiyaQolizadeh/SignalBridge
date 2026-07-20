@@ -104,7 +104,7 @@ def test_experimental_prompt_loads_and_production_prompt_is_versioned() -> None:
     assert "Weak evidence alone is not escalation" in experiment
     assert "partially_grounded" in experiment
     assert "incomplete" in experiment and "irrelevant" in experiment
-    assert prompt_sha256("03_evidence_validator.txt") == "9d61219e638e48d6495abda5ffdcd3294f884239271fe258ef2910cb47d0adb9"
+    assert prompt_sha256("03_evidence_validator.txt") == "54e954fdb661a3058ddabe6f8d6424eee442c5fade1ee3937ad69eeba8d9185c"
     assert prompt_sha256("03_evidence_validator_review_experiment.txt") != prompt_sha256("03_evidence_validator.txt")
 
 

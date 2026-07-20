@@ -1,0 +1,739 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/pages/UploadTranscript.tsx");import RefreshRuntime from "/@react-refresh";
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("@vitejs/plugin-react can't detect preamble. Something is wrong. See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201");
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    RefreshRuntime.register(type, "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/pages/UploadTranscript.tsx " + id);
+  };
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _jsxFileName = "D:\\WorkSpace\\Optimize_Finance\\signalbridge\\frontend\\src\\pages\\UploadTranscript.tsx", _s = $RefreshSig$();
+import __vite__cjsImport2_react from "/node_modules/.vite/deps/react.js?v=165d986c"; const useEffect = __vite__cjsImport2_react["useEffect"]; const useRef = __vite__cjsImport2_react["useRef"]; const useState = __vite__cjsImport2_react["useState"];
+import { useMutation, useQueryClient } from "/node_modules/.vite/deps/@tanstack_react-query.js?v=165d986c";
+import { Link } from "/node_modules/.vite/deps/react-router-dom.js?v=165d986c";
+import { ApiError } from "/src/api/client.ts";
+import { uploadTranscript } from "/src/api/transcripts.ts";
+import { Breadcrumbs } from "/src/components/Breadcrumbs.tsx";
+import __vite__cjsImport8_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=165d986c"; const _jsxDEV = __vite__cjsImport8_react_jsxDevRuntime["jsxDEV"];
+function formatFileSize(bytes) {
+  if (bytes < 1024)
+    return `${bytes} bytes`;
+  if (bytes < 1024 * 1024)
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+function validateFile(file) {
+  if (!file)
+    return "Select a transcript file before uploading.";
+  if (!file.name.toLowerCase().endsWith(".txt")) {
+    return "Only .txt transcript files are supported. Choose a plain-text transcript and try again.";
+  }
+  if (file.size === 0) {
+    return "The selected transcript file is empty. Choose a non-empty .txt file.";
+  }
+  return null;
+}
+export function UploadTranscript() {
+  _s();
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
+  const dropZoneRef = useRef(null);
+  const successRef = useRef(null);
+  const dragDepthRef = useRef(0);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [validationError, setValidationError] = useState(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const uploadMutation = useMutation({
+    mutationFn: uploadTranscript,
+    onSuccess: () => {
+      setValidationError(null);
+      queryClient.invalidateQueries({
+        queryKey: ["transcripts"]
+      });
+    }
+  });
+  useEffect(() => {
+    if (uploadMutation.isSuccess)
+      successRef.current?.focus();
+  }, [uploadMutation.isSuccess]);
+  function selectFile(file) {
+    const error = validateFile(file);
+    setValidationError(error);
+    setSelectedFile(error ? null : file);
+    if (error && fileInputRef.current)
+      fileInputRef.current.value = "";
+    uploadMutation.reset();
+  }
+  function handleFileChange(event) {
+    selectFile(event.target.files?.[0] ?? null);
+  }
+  function openFilePicker() {
+    if (!uploadMutation.isLoading)
+      fileInputRef.current?.click();
+  }
+  function removeFile() {
+    if (uploadMutation.isLoading)
+      return;
+    setSelectedFile(null);
+    setValidationError(null);
+    uploadMutation.reset();
+    if (fileInputRef.current)
+      fileInputRef.current.value = "";
+    dropZoneRef.current?.focus();
+  }
+  function handleDropZoneKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openFilePicker();
+    }
+  }
+  function handleDragEnter(event) {
+    event.preventDefault();
+    if (uploadMutation.isLoading)
+      return;
+    dragDepthRef.current += 1;
+    setIsDragActive(true);
+  }
+  function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = uploadMutation.isLoading ? "none" : "copy";
+  }
+  function handleDragLeave(event) {
+    event.preventDefault();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0)
+      setIsDragActive(false);
+  }
+  function handleDrop(event) {
+    event.preventDefault();
+    dragDepthRef.current = 0;
+    setIsDragActive(false);
+    if (uploadMutation.isLoading)
+      return;
+    if (event.dataTransfer.files.length !== 1) {
+      setSelectedFile(null);
+      setValidationError("Choose exactly one .txt transcript per upload.");
+      uploadMutation.reset();
+      return;
+    }
+    selectFile(event.dataTransfer.files[0]);
+  }
+  function handleSubmit(event) {
+    event.preventDefault();
+    const error = validateFile(selectedFile);
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+    uploadMutation.mutate(selectedFile);
+  }
+  const apiError = uploadMutation.error instanceof ApiError ? uploadMutation.error.message : uploadMutation.isError ? "An unexpected error occurred while uploading the transcript." : null;
+  return /* @__PURE__ */ _jsxDEV("section", {
+    className: "upload-page",
+    "aria-labelledby": "upload-title",
+    children: [/* @__PURE__ */ _jsxDEV(Breadcrumbs, {
+      items: [{
+        label: "Transcripts",
+        to: "/"
+      }, {
+        label: "Upload transcript"
+      }]
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 141,
+      columnNumber: 7
+    }, this), /* @__PURE__ */ _jsxDEV("div", {
+      className: "page-header upload-page-header",
+      children: /* @__PURE__ */ _jsxDEV("div", {
+        className: "page-header__content",
+        children: [/* @__PURE__ */ _jsxDEV("p", {
+          className: "eyebrow",
+          children: "New transcript"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 150,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("h2", {
+          className: "page-title",
+          id: "upload-title",
+          children: "Upload transcript"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 151,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("p", {
+          className: "page-description",
+          children: "Add one meeting transcript to the workspace. Analysis starts only when you initiate it from the transcript record."
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 152,
+          columnNumber: 11
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 149,
+        columnNumber: 9
+      }, this)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 148,
+      columnNumber: 7
+    }, this), uploadMutation.isSuccess ? /* @__PURE__ */ _jsxDEV("div", {
+      className: "upload-complete surface",
+      ref: successRef,
+      role: "status",
+      tabIndex: -1,
+      children: [/* @__PURE__ */ _jsxDEV("div", {
+        className: "upload-complete__mark",
+        "aria-hidden": "true",
+        children: "\u2713"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 166,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("p", {
+        className: "eyebrow",
+        children: "Upload complete"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 167,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("h3", {
+        children: uploadMutation.data.file_name
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 168,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("p", {
+        children: "The transcript is stored and ready for speaker-turn review and processing. Analysis has not started."
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 169,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("dl", {
+        children: [/* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Status"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 175,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            className: "status-badge status-badge--ready",
+            children: uploadMutation.data.status.replace(/_/g, " ")
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 176,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 174,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Token count"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 181,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: uploadMutation.data.token_count.toLocaleString()
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 182,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 180,
+          columnNumber: 13
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 173,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("div", {
+        className: "upload-complete__actions",
+        children: [/* @__PURE__ */ _jsxDEV(Link, {
+          className: "button button--primary",
+          to: `/transcripts/${uploadMutation.data.id}`,
+          children: "View transcript"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 186,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV(Link, {
+          className: "button button--secondary",
+          to: "/",
+          children: "Back to transcripts"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 192,
+          columnNumber: 13
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 185,
+        columnNumber: 11
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 160,
+      columnNumber: 9
+    }, this) : /* @__PURE__ */ _jsxDEV("div", {
+      className: "upload-workspace",
+      children: [/* @__PURE__ */ _jsxDEV("form", {
+        className: "upload-form surface",
+        onSubmit: handleSubmit,
+        noValidate: true,
+        children: [/* @__PURE__ */ _jsxDEV("input", {
+          className: "visually-hidden",
+          id: "transcript-file",
+          ref: fileInputRef,
+          name: "file",
+          type: "file",
+          accept: ".txt,text/plain",
+          "aria-label": "Choose a transcript file",
+          onChange: handleFileChange,
+          disabled: uploadMutation.isLoading
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 200,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          ref: dropZoneRef,
+          className: `upload-drop-zone${isDragActive ? " is-drag-active" : ""}${uploadMutation.isLoading ? " is-disabled" : ""}`,
+          role: "button",
+          tabIndex: uploadMutation.isLoading ? -1 : 0,
+          "aria-controls": "transcript-file",
+          "aria-disabled": uploadMutation.isLoading,
+          onClick: openFilePicker,
+          onKeyDown: handleDropZoneKeyDown,
+          onDragEnter: handleDragEnter,
+          onDragOver: handleDragOver,
+          onDragLeave: handleDragLeave,
+          onDrop: handleDrop,
+          children: [/* @__PURE__ */ _jsxDEV("span", {
+            className: "upload-drop-zone__icon",
+            "aria-hidden": "true",
+            children: "\u2191"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 226,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("strong", {
+            children: isDragActive ? "Release to select this transcript" : "Drop a .txt transcript here"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 227,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("span", {
+            children: "or choose a file"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 230,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("small", {
+            children: "One non-empty UTF-8 .txt file"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 231,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 212,
+          columnNumber: 13
+        }, this), selectedFile ? /* @__PURE__ */ _jsxDEV("div", {
+          className: "selected-file-card",
+          "aria-live": "polite",
+          children: [/* @__PURE__ */ _jsxDEV("div", {
+            className: "selected-file-card__details",
+            children: [/* @__PURE__ */ _jsxDEV("span", {
+              className: "selected-file-card__status",
+              children: "Valid .txt file"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 237,
+              columnNumber: 19
+            }, this), /* @__PURE__ */ _jsxDEV("strong", {
+              children: selectedFile.name
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 238,
+              columnNumber: 19
+            }, this), /* @__PURE__ */ _jsxDEV("span", {
+              children: formatFileSize(selectedFile.size)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 239,
+              columnNumber: 19
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 236,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("div", {
+            className: "selected-file-card__actions",
+            children: [/* @__PURE__ */ _jsxDEV("button", {
+              className: "button button--ghost",
+              type: "button",
+              disabled: uploadMutation.isLoading,
+              onClick: openFilePicker,
+              children: "Choose another"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 242,
+              columnNumber: 19
+            }, this), /* @__PURE__ */ _jsxDEV("button", {
+              className: "button button--ghost selected-file-card__remove",
+              type: "button",
+              disabled: uploadMutation.isLoading,
+              onClick: removeFile,
+              children: "Remove"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 250,
+              columnNumber: 19
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 241,
+            columnNumber: 17
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 235,
+          columnNumber: 15
+        }, this) : null, validationError ? /* @__PURE__ */ _jsxDEV("div", {
+          className: "alert alert--error upload-alert",
+          role: "alert",
+          children: [/* @__PURE__ */ _jsxDEV("strong", {
+            children: "File not accepted"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 264,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("p", {
+            children: validationError
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 265,
+            columnNumber: 17
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 263,
+          columnNumber: 15
+        }, this) : null, apiError ? /* @__PURE__ */ _jsxDEV("div", {
+          className: "alert alert--error upload-alert",
+          role: "alert",
+          children: [/* @__PURE__ */ _jsxDEV("strong", {
+            children: "Upload could not be completed"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 271,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("p", {
+            children: apiError
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 272,
+            columnNumber: 17
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 270,
+          columnNumber: 15
+        }, this) : null, uploadMutation.isLoading ? /* @__PURE__ */ _jsxDEV("div", {
+          className: "upload-progress",
+          role: "status",
+          "aria-live": "polite",
+          children: [/* @__PURE__ */ _jsxDEV("span", {
+            className: "spinner",
+            "aria-hidden": "true"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 278,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("span", {
+            children: "Uploading transcript. Analysis has not started."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 279,
+            columnNumber: 17
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 277,
+          columnNumber: 15
+        }, this) : null, /* @__PURE__ */ _jsxDEV("button", {
+          className: "button button--primary upload-submit",
+          type: "submit",
+          disabled: !selectedFile || uploadMutation.isLoading,
+          children: uploadMutation.isLoading ? "Uploading..." : "Upload transcript"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 283,
+          columnNumber: 13
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 199,
+        columnNumber: 11
+      }, this), /* @__PURE__ */ _jsxDEV("aside", {
+        className: "upload-requirements surface",
+        "aria-labelledby": "requirements-title",
+        children: [/* @__PURE__ */ _jsxDEV("h3", {
+          id: "requirements-title",
+          children: "Before you upload"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 293,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("dl", {
+          children: [/* @__PURE__ */ _jsxDEV("div", {
+            children: [/* @__PURE__ */ _jsxDEV("dt", {
+              children: "File type"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 295,
+              columnNumber: 20
+            }, this), /* @__PURE__ */ _jsxDEV("dd", {
+              children: ".txt"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 295,
+              columnNumber: 38
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 295,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("div", {
+            children: [/* @__PURE__ */ _jsxDEV("dt", {
+              children: "Encoding"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 296,
+              columnNumber: 20
+            }, this), /* @__PURE__ */ _jsxDEV("dd", {
+              children: "UTF-8"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 296,
+              columnNumber: 37
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 296,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("div", {
+            children: [/* @__PURE__ */ _jsxDEV("dt", {
+              children: "Quantity"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 297,
+              columnNumber: 20
+            }, this), /* @__PURE__ */ _jsxDEV("dd", {
+              children: "One transcript per upload"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 297,
+              columnNumber: 37
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 297,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 294,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("p", {
+          children: "Uploading stores the transcript only. You will review it and start analysis from the transcript detail page."
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 299,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("ol", {
+          className: "upload-next-steps",
+          children: [/* @__PURE__ */ _jsxDEV("li", {
+            children: "Upload the transcript record."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 304,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("li", {
+            children: "Open the record and start analysis."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 305,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("li", {
+            children: "Review final signals and supporting evidence."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 306,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 303,
+          columnNumber: 13
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 292,
+        columnNumber: 11
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 198,
+      columnNumber: 9
+    }, this)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 140,
+    columnNumber: 5
+  }, this);
+}
+_s(UploadTranscript, "8o2/zNGtnnOw99iObRCT5FoYUbQ=", false, function() {
+  return [useQueryClient, useMutation];
+});
+_c = UploadTranscript;
+var _c;
+$RefreshReg$(_c, "UploadTranscript");
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+  import.meta.hot.accept();
+  if (!window.__vite_plugin_react_timeout) {
+    window.__vite_plugin_react_timeout = setTimeout(() => {
+      window.__vite_plugin_react_timeout = 0;
+      RefreshRuntime.performReactRefresh();
+    }, 30);
+  }
+}
+
+/*{
+  "version": 3,
+  "mappings": "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",
+  "names": [
+    "useEffect",
+    "useRef",
+    "useState",
+    "useMutation",
+    "useQueryClient",
+    "Link",
+    "ApiError",
+    "uploadTranscript",
+    "Breadcrumbs",
+    "formatFileSize",
+    "bytes",
+    "toFixed",
+    "validateFile",
+    "file",
+    "name",
+    "toLowerCase",
+    "endsWith",
+    "size",
+    "UploadTranscript",
+    "_s",
+    "queryClient",
+    "fileInputRef",
+    "dropZoneRef",
+    "successRef",
+    "dragDepthRef",
+    "selectedFile",
+    "setSelectedFile",
+    "validationError",
+    "setValidationError",
+    "isDragActive",
+    "setIsDragActive",
+    "uploadMutation",
+    "mutationFn",
+    "onSuccess",
+    "invalidateQueries",
+    "queryKey",
+    "isSuccess",
+    "current",
+    "focus",
+    "selectFile",
+    "error",
+    "value",
+    "reset",
+    "handleFileChange",
+    "event",
+    "target",
+    "files",
+    "openFilePicker",
+    "isLoading",
+    "click",
+    "removeFile",
+    "handleDropZoneKeyDown",
+    "key",
+    "preventDefault",
+    "handleDragEnter",
+    "handleDragOver",
+    "dataTransfer",
+    "dropEffect",
+    "handleDragLeave",
+    "Math",
+    "max",
+    "handleDrop",
+    "length",
+    "handleSubmit",
+    "mutate",
+    "apiError",
+    "message",
+    "isError",
+    "_jsxDEV",
+    "className",
+    "children",
+    "items",
+    "label",
+    "to",
+    "_jsxFileName",
+    "id",
+    "ref",
+    "role",
+    "tabIndex",
+    "data",
+    "file_name",
+    "status",
+    "replace",
+    "token_count",
+    "toLocaleString",
+    "onSubmit",
+    "noValidate",
+    "type",
+    "accept",
+    "onChange",
+    "disabled",
+    "onClick",
+    "onKeyDown",
+    "onDragEnter",
+    "onDragOver",
+    "onDragLeave",
+    "onDrop",
+    "_c",
+    "$RefreshReg$"
+  ],
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/pages/UploadTranscript.tsx"
+  ],
+  "file": "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/pages/UploadTranscript.tsx",
+  "sourcesContent": [
+    "import {\n  ChangeEvent,\n  DragEvent,\n  FormEvent,\n  KeyboardEvent,\n  useEffect,\n  useRef,\n  useState,\n} from 'react'\nimport { useMutation, useQueryClient } from '@tanstack/react-query'\nimport { Link } from 'react-router-dom'\n\nimport { ApiError } from '../api/client'\nimport { uploadTranscript } from '../api/transcripts'\nimport { Breadcrumbs } from '../components/Breadcrumbs'\n\nfunction formatFileSize(bytes: number): string {\n  if (bytes < 1024) return `${bytes} bytes`\n  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`\n  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`\n}\n\nfunction validateFile(file: File | null): string | null {\n  if (!file) return 'Select a transcript file before uploading.'\n  if (!file.name.toLowerCase().endsWith('.txt')) {\n    return 'Only .txt transcript files are supported. Choose a plain-text transcript and try again.'\n  }\n  if (file.size === 0) {\n    return 'The selected transcript file is empty. Choose a non-empty .txt file.'\n  }\n  return null\n}\n\nexport function UploadTranscript() {\n  const queryClient = useQueryClient()\n  const fileInputRef = useRef<HTMLInputElement>(null)\n  const dropZoneRef = useRef<HTMLDivElement>(null)\n  const successRef = useRef<HTMLDivElement>(null)\n  const dragDepthRef = useRef(0)\n  const [selectedFile, setSelectedFile] = useState<File | null>(null)\n  const [validationError, setValidationError] = useState<string | null>(null)\n  const [isDragActive, setIsDragActive] = useState(false)\n\n  const uploadMutation = useMutation({\n    mutationFn: uploadTranscript,\n    onSuccess: () => {\n      setValidationError(null)\n      queryClient.invalidateQueries({ queryKey: ['transcripts'] })\n    },\n  })\n\n  useEffect(() => {\n    if (uploadMutation.isSuccess) successRef.current?.focus()\n  }, [uploadMutation.isSuccess])\n\n  function selectFile(file: File | null) {\n    const error = validateFile(file)\n    setValidationError(error)\n    setSelectedFile(error ? null : file)\n    if (error && fileInputRef.current) fileInputRef.current.value = ''\n    uploadMutation.reset()\n  }\n\n  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {\n    selectFile(event.target.files?.[0] ?? null)\n  }\n\n  function openFilePicker() {\n    if (!uploadMutation.isLoading) fileInputRef.current?.click()\n  }\n\n  function removeFile() {\n    if (uploadMutation.isLoading) return\n    setSelectedFile(null)\n    setValidationError(null)\n    uploadMutation.reset()\n    if (fileInputRef.current) fileInputRef.current.value = ''\n    dropZoneRef.current?.focus()\n  }\n\n  function handleDropZoneKeyDown(event: KeyboardEvent<HTMLDivElement>) {\n    if (event.key === 'Enter' || event.key === ' ') {\n      event.preventDefault()\n      openFilePicker()\n    }\n  }\n\n  function handleDragEnter(event: DragEvent<HTMLDivElement>) {\n    event.preventDefault()\n    if (uploadMutation.isLoading) return\n    dragDepthRef.current += 1\n    setIsDragActive(true)\n  }\n\n  function handleDragOver(event: DragEvent<HTMLDivElement>) {\n    event.preventDefault()\n    event.dataTransfer.dropEffect = uploadMutation.isLoading ? 'none' : 'copy'\n  }\n\n  function handleDragLeave(event: DragEvent<HTMLDivElement>) {\n    event.preventDefault()\n    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)\n    if (dragDepthRef.current === 0) setIsDragActive(false)\n  }\n\n  function handleDrop(event: DragEvent<HTMLDivElement>) {\n    event.preventDefault()\n    dragDepthRef.current = 0\n    setIsDragActive(false)\n    if (uploadMutation.isLoading) return\n\n    if (event.dataTransfer.files.length !== 1) {\n      setSelectedFile(null)\n      setValidationError('Choose exactly one .txt transcript per upload.')\n      uploadMutation.reset()\n      return\n    }\n\n    selectFile(event.dataTransfer.files[0])\n  }\n\n  function handleSubmit(event: FormEvent<HTMLFormElement>) {\n    event.preventDefault()\n    const error = validateFile(selectedFile)\n    if (error) {\n      setValidationError(error)\n      return\n    }\n    uploadMutation.mutate(selectedFile as File)\n  }\n\n  const apiError =\n    uploadMutation.error instanceof ApiError\n      ? uploadMutation.error.message\n      : uploadMutation.isError\n        ? 'An unexpected error occurred while uploading the transcript.'\n        : null\n\n  return (\n    <section className=\"upload-page\" aria-labelledby=\"upload-title\">\n      <Breadcrumbs\n        items={[\n          { label: 'Transcripts', to: '/' },\n          { label: 'Upload transcript' },\n        ]}\n      />\n\n      <div className=\"page-header upload-page-header\">\n        <div className=\"page-header__content\">\n          <p className=\"eyebrow\">New transcript</p>\n          <h2 className=\"page-title\" id=\"upload-title\">Upload transcript</h2>\n          <p className=\"page-description\">\n            Add one meeting transcript to the workspace. Analysis starts only\n            when you initiate it from the transcript record.\n          </p>\n        </div>\n      </div>\n\n      {uploadMutation.isSuccess ? (\n        <div\n          className=\"upload-complete surface\"\n          ref={successRef}\n          role=\"status\"\n          tabIndex={-1}\n        >\n          <div className=\"upload-complete__mark\" aria-hidden=\"true\">✓</div>\n          <p className=\"eyebrow\">Upload complete</p>\n          <h3>{uploadMutation.data.file_name}</h3>\n          <p>\n            The transcript is stored and ready for speaker-turn review and\n            processing. Analysis has not started.\n          </p>\n          <dl>\n            <div>\n              <dt>Status</dt>\n              <dd className=\"status-badge status-badge--ready\">\n                {uploadMutation.data.status.replace(/_/g, ' ')}\n              </dd>\n            </div>\n            <div>\n              <dt>Token count</dt>\n              <dd>{uploadMutation.data.token_count.toLocaleString()}</dd>\n            </div>\n          </dl>\n          <div className=\"upload-complete__actions\">\n            <Link\n              className=\"button button--primary\"\n              to={`/transcripts/${uploadMutation.data.id}`}\n            >\n              View transcript\n            </Link>\n            <Link className=\"button button--secondary\" to=\"/\">\n              Back to transcripts\n            </Link>\n          </div>\n        </div>\n      ) : (\n        <div className=\"upload-workspace\">\n          <form className=\"upload-form surface\" onSubmit={handleSubmit} noValidate>\n            <input\n              className=\"visually-hidden\"\n              id=\"transcript-file\"\n              ref={fileInputRef}\n              name=\"file\"\n              type=\"file\"\n              accept=\".txt,text/plain\"\n              aria-label=\"Choose a transcript file\"\n              onChange={handleFileChange}\n              disabled={uploadMutation.isLoading}\n            />\n\n            <div\n              ref={dropZoneRef}\n              className={`upload-drop-zone${isDragActive ? ' is-drag-active' : ''}${uploadMutation.isLoading ? ' is-disabled' : ''}`}\n              role=\"button\"\n              tabIndex={uploadMutation.isLoading ? -1 : 0}\n              aria-controls=\"transcript-file\"\n              aria-disabled={uploadMutation.isLoading}\n              onClick={openFilePicker}\n              onKeyDown={handleDropZoneKeyDown}\n              onDragEnter={handleDragEnter}\n              onDragOver={handleDragOver}\n              onDragLeave={handleDragLeave}\n              onDrop={handleDrop}\n            >\n              <span className=\"upload-drop-zone__icon\" aria-hidden=\"true\">↑</span>\n              <strong>\n                {isDragActive ? 'Release to select this transcript' : 'Drop a .txt transcript here'}\n              </strong>\n              <span>or choose a file</span>\n              <small>One non-empty UTF-8 .txt file</small>\n            </div>\n\n            {selectedFile ? (\n              <div className=\"selected-file-card\" aria-live=\"polite\">\n                <div className=\"selected-file-card__details\">\n                  <span className=\"selected-file-card__status\">Valid .txt file</span>\n                  <strong>{selectedFile.name}</strong>\n                  <span>{formatFileSize(selectedFile.size)}</span>\n                </div>\n                <div className=\"selected-file-card__actions\">\n                  <button\n                    className=\"button button--ghost\"\n                    type=\"button\"\n                    disabled={uploadMutation.isLoading}\n                    onClick={openFilePicker}\n                  >\n                    Choose another\n                  </button>\n                  <button\n                    className=\"button button--ghost selected-file-card__remove\"\n                    type=\"button\"\n                    disabled={uploadMutation.isLoading}\n                    onClick={removeFile}\n                  >\n                    Remove\n                  </button>\n                </div>\n              </div>\n            ) : null}\n\n            {validationError ? (\n              <div className=\"alert alert--error upload-alert\" role=\"alert\">\n                <strong>File not accepted</strong>\n                <p>{validationError}</p>\n              </div>\n            ) : null}\n\n            {apiError ? (\n              <div className=\"alert alert--error upload-alert\" role=\"alert\">\n                <strong>Upload could not be completed</strong>\n                <p>{apiError}</p>\n              </div>\n            ) : null}\n\n            {uploadMutation.isLoading ? (\n              <div className=\"upload-progress\" role=\"status\" aria-live=\"polite\">\n                <span className=\"spinner\" aria-hidden=\"true\" />\n                <span>Uploading transcript. Analysis has not started.</span>\n              </div>\n            ) : null}\n\n            <button\n              className=\"button button--primary upload-submit\"\n              type=\"submit\"\n              disabled={!selectedFile || uploadMutation.isLoading}\n            >\n              {uploadMutation.isLoading ? 'Uploading...' : 'Upload transcript'}\n            </button>\n          </form>\n\n          <aside className=\"upload-requirements surface\" aria-labelledby=\"requirements-title\">\n            <h3 id=\"requirements-title\">Before you upload</h3>\n            <dl>\n              <div><dt>File type</dt><dd>.txt</dd></div>\n              <div><dt>Encoding</dt><dd>UTF-8</dd></div>\n              <div><dt>Quantity</dt><dd>One transcript per upload</dd></div>\n            </dl>\n            <p>\n              Uploading stores the transcript only. You will review it and start\n              analysis from the transcript detail page.\n            </p>\n            <ol className=\"upload-next-steps\">\n              <li>Upload the transcript record.</li>\n              <li>Open the record and start analysis.</li>\n              <li>Review final signals and supporting evidence.</li>\n            </ol>\n          </aside>\n        </div>\n      )}\n    </section>\n  )\n}\n"
+  ]
+}*/
+
+//# sourceMappingURL=data:application/json;base64,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QUFBZ0YiLCJuYW1lcyI6WyJ1c2VFZmZlY3QiLCJ1c2VSZWYiLCJ1c2VTdGF0ZSIsInVzZU11dGF0aW9uIiwidXNlUXVlcnlDbGllbnQiLCJMaW5rIiwiQXBpRXJyb3IiLCJ1cGxvYWRUcmFuc2NyaXB0IiwiQnJlYWRjcnVtYnMiLCJmb3JtYXRGaWxlU2l6ZSIsImJ5dGVzIiwidG9GaXhlZCIsInZhbGlkYXRlRmlsZSIsImZpbGUiLCJuYW1lIiwidG9Mb3dlckNhc2UiLCJlbmRzV2l0aCIsInNpemUiLCJVcGxvYWRUcmFuc2NyaXB0IiwiX3MiLCJxdWVyeUNsaWVudCIsImZpbGVJbnB1dFJlZiIsImRyb3Bab25lUmVmIiwic3VjY2Vzc1JlZiIsImRyYWdEZXB0aFJlZiIsInNlbGVjdGVkRmlsZSIsInNldFNlbGVjdGVkRmlsZSIsInZhbGlkYXRpb25FcnJvciIsInNldFZhbGlkYXRpb25FcnJvciIsImlzRHJhZ0FjdGl2ZSIsInNldElzRHJhZ0FjdGl2ZSIsInVwbG9hZE11dGF0aW9uIiwibXV0YXRpb25GbiIsIm9uU3VjY2VzcyIsImludmFsaWRhdGVRdWVyaWVzIiwicXVlcnlLZXkiLCJpc1N1Y2Nlc3MiLCJjdXJyZW50IiwiZm9jdXMiLCJzZWxlY3RGaWxlIiwiZXJyb3IiLCJ2YWx1ZSIsInJlc2V0IiwiaGFuZGxlRmlsZUNoYW5nZSIsImV2ZW50IiwidGFyZ2V0IiwiZmlsZXMiLCJvcGVuRmlsZVBpY2tlciIsImlzTG9hZGluZyIsImNsaWNrIiwicmVtb3ZlRmlsZSIsImhhbmRsZURyb3Bab25lS2V5RG93biIsImtleSIsInByZXZlbnREZWZhdWx0IiwiaGFuZGxlRHJhZ0VudGVyIiwiaGFuZGxlRHJhZ092ZXIiLCJkYXRhVHJhbnNmZXIiLCJkcm9wRWZmZWN0IiwiaGFuZGxlRHJhZ0xlYXZlIiwiTWF0aCIsIm1heCIsImhhbmRsZURyb3AiLCJsZW5ndGgiLCJoYW5kbGVTdWJtaXQiLCJtdXRhdGUiLCJhcGlFcnJvciIsIm1lc3NhZ2UiLCJpc0Vycm9yIiwiX2pzeERFViIsImNsYXNzTmFtZSIsImNoaWxkcmVuIiwiaXRlbXMiLCJsYWJlbCIsInRvIiwiX2pzeEZpbGVOYW1lIiwiaWQiLCJyZWYiLCJyb2xlIiwidGFiSW5kZXgiLCJkYXRhIiwiZmlsZV9uYW1lIiwic3RhdHVzIiwicmVwbGFjZSIsInRva2VuX2NvdW50IiwidG9Mb2NhbGVTdHJpbmciLCJvblN1Ym1pdCIsIm5vVmFsaWRhdGUiLCJ0eXBlIiwiYWNjZXB0Iiwib25DaGFuZ2UiLCJkaXNhYmxlZCIsIm9uQ2xpY2siLCJvbktleURvd24iLCJvbkRyYWdFbnRlciIsIm9uRHJhZ092ZXIiLCJvbkRyYWdMZWF2ZSIsIm9uRHJvcCIsIl9jIiwiJFJlZnJlc2hSZWckIl0sInNvdXJjZXMiOlsiRDovV29ya1NwYWNlL09wdGltaXplX0ZpbmFuY2Uvc2lnbmFsYnJpZGdlL2Zyb250ZW5kL3NyYy9wYWdlcy9VcGxvYWRUcmFuc2NyaXB0LnRzeCJdLCJmaWxlIjoiRDovV29ya1NwYWNlL09wdGltaXplX0ZpbmFuY2Uvc2lnbmFsYnJpZGdlL2Zyb250ZW5kL3NyYy9wYWdlcy9VcGxvYWRUcmFuc2NyaXB0LnRzeCIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7XG4gIENoYW5nZUV2ZW50LFxuICBEcmFnRXZlbnQsXG4gIEZvcm1FdmVudCxcbiAgS2V5Ym9hcmRFdmVudCxcbiAgdXNlRWZmZWN0LFxuICB1c2VSZWYsXG4gIHVzZVN0YXRlLFxufSBmcm9tICdyZWFjdCdcbmltcG9ydCB7IHVzZU11dGF0aW9uLCB1c2VRdWVyeUNsaWVudCB9IGZyb20gJ0B0YW5zdGFjay9yZWFjdC1xdWVyeSdcbmltcG9ydCB7IExpbmsgfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJ1xuXG5pbXBvcnQgeyBBcGlFcnJvciB9IGZyb20gJy4uL2FwaS9jbGllbnQnXG5pbXBvcnQgeyB1cGxvYWRUcmFuc2NyaXB0IH0gZnJvbSAnLi4vYXBpL3RyYW5zY3JpcHRzJ1xuaW1wb3J0IHsgQnJlYWRjcnVtYnMgfSBmcm9tICcuLi9jb21wb25lbnRzL0JyZWFkY3J1bWJzJ1xuXG5mdW5jdGlvbiBmb3JtYXRGaWxlU2l6ZShieXRlczogbnVtYmVyKTogc3RyaW5nIHtcbiAgaWYgKGJ5dGVzIDwgMTAyNCkgcmV0dXJuIGAke2J5dGVzfSBieXRlc2BcbiAgaWYgKGJ5dGVzIDwgMTAyNCAqIDEwMjQpIHJldHVybiBgJHsoYnl0ZXMgLyAxMDI0KS50b0ZpeGVkKDEpfSBLQmBcbiAgcmV0dXJuIGAkeyhieXRlcyAvICgxMDI0ICogMTAyNCkpLnRvRml4ZWQoMSl9IE1CYFxufVxuXG5mdW5jdGlvbiB2YWxpZGF0ZUZpbGUoZmlsZTogRmlsZSB8IG51bGwpOiBzdHJpbmcgfCBudWxsIHtcbiAgaWYgKCFmaWxlKSByZXR1cm4gJ1NlbGVjdCBhIHRyYW5zY3JpcHQgZmlsZSBiZWZvcmUgdXBsb2FkaW5nLidcbiAgaWYgKCFmaWxlLm5hbWUudG9Mb3dlckNhc2UoKS5lbmRzV2l0aCgnLnR4dCcpKSB7XG4gICAgcmV0dXJuICdPbmx5IC50eHQgdHJhbnNjcmlwdCBmaWxlcyBhcmUgc3VwcG9ydGVkLiBDaG9vc2UgYSBwbGFpbi10ZXh0IHRyYW5zY3JpcHQgYW5kIHRyeSBhZ2Fpbi4nXG4gIH1cbiAgaWYgKGZpbGUuc2l6ZSA9PT0gMCkge1xuICAgIHJldHVybiAnVGhlIHNlbGVjdGVkIHRyYW5zY3JpcHQgZmlsZSBpcyBlbXB0eS4gQ2hvb3NlIGEgbm9uLWVtcHR5IC50eHQgZmlsZS4nXG4gIH1cbiAgcmV0dXJuIG51bGxcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIFVwbG9hZFRyYW5zY3JpcHQoKSB7XG4gIGNvbnN0IHF1ZXJ5Q2xpZW50ID0gdXNlUXVlcnlDbGllbnQoKVxuICBjb25zdCBmaWxlSW5wdXRSZWYgPSB1c2VSZWY8SFRNTElucHV0RWxlbWVudD4obnVsbClcbiAgY29uc3QgZHJvcFpvbmVSZWYgPSB1c2VSZWY8SFRNTERpdkVsZW1lbnQ+KG51bGwpXG4gIGNvbnN0IHN1Y2Nlc3NSZWYgPSB1c2VSZWY8SFRNTERpdkVsZW1lbnQ+KG51bGwpXG4gIGNvbnN0IGRyYWdEZXB0aFJlZiA9IHVzZVJlZigwKVxuICBjb25zdCBbc2VsZWN0ZWRGaWxlLCBzZXRTZWxlY3RlZEZpbGVdID0gdXNlU3RhdGU8RmlsZSB8IG51bGw+KG51bGwpXG4gIGNvbnN0IFt2YWxpZGF0aW9uRXJyb3IsIHNldFZhbGlkYXRpb25FcnJvcl0gPSB1c2VTdGF0ZTxzdHJpbmcgfCBudWxsPihudWxsKVxuICBjb25zdCBbaXNEcmFnQWN0aXZlLCBzZXRJc0RyYWdBY3RpdmVdID0gdXNlU3RhdGUoZmFsc2UpXG5cbiAgY29uc3QgdXBsb2FkTXV0YXRpb24gPSB1c2VNdXRhdGlvbih7XG4gICAgbXV0YXRpb25GbjogdXBsb2FkVHJhbnNjcmlwdCxcbiAgICBvblN1Y2Nlc3M6ICgpID0+IHtcbiAgICAgIHNldFZhbGlkYXRpb25FcnJvcihudWxsKVxuICAgICAgcXVlcnlDbGllbnQuaW52YWxpZGF0ZVF1ZXJpZXMoeyBxdWVyeUtleTogWyd0cmFuc2NyaXB0cyddIH0pXG4gICAgfSxcbiAgfSlcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIGlmICh1cGxvYWRNdXRhdGlvbi5pc1N1Y2Nlc3MpIHN1Y2Nlc3NSZWYuY3VycmVudD8uZm9jdXMoKVxuICB9LCBbdXBsb2FkTXV0YXRpb24uaXNTdWNjZXNzXSlcblxuICBmdW5jdGlvbiBzZWxlY3RGaWxlKGZpbGU6IEZpbGUgfCBudWxsKSB7XG4gICAgY29uc3QgZXJyb3IgPSB2YWxpZGF0ZUZpbGUoZmlsZSlcbiAgICBzZXRWYWxpZGF0aW9uRXJyb3IoZXJyb3IpXG4gICAgc2V0U2VsZWN0ZWRGaWxlKGVycm9yID8gbnVsbCA6IGZpbGUpXG4gICAgaWYgKGVycm9yICYmIGZpbGVJbnB1dFJlZi5jdXJyZW50KSBmaWxlSW5wdXRSZWYuY3VycmVudC52YWx1ZSA9ICcnXG4gICAgdXBsb2FkTXV0YXRpb24ucmVzZXQoKVxuICB9XG5cbiAgZnVuY3Rpb24gaGFuZGxlRmlsZUNoYW5nZShldmVudDogQ2hhbmdlRXZlbnQ8SFRNTElucHV0RWxlbWVudD4pIHtcbiAgICBzZWxlY3RGaWxlKGV2ZW50LnRhcmdldC5maWxlcz8uWzBdID8/IG51bGwpXG4gIH1cblxuICBmdW5jdGlvbiBvcGVuRmlsZVBpY2tlcigpIHtcbiAgICBpZiAoIXVwbG9hZE11dGF0aW9uLmlzTG9hZGluZykgZmlsZUlucHV0UmVmLmN1cnJlbnQ/LmNsaWNrKClcbiAgfVxuXG4gIGZ1bmN0aW9uIHJlbW92ZUZpbGUoKSB7XG4gICAgaWYgKHVwbG9hZE11dGF0aW9uLmlzTG9hZGluZykgcmV0dXJuXG4gICAgc2V0U2VsZWN0ZWRGaWxlKG51bGwpXG4gICAgc2V0VmFsaWRhdGlvbkVycm9yKG51bGwpXG4gICAgdXBsb2FkTXV0YXRpb24ucmVzZXQoKVxuICAgIGlmIChmaWxlSW5wdXRSZWYuY3VycmVudCkgZmlsZUlucHV0UmVmLmN1cnJlbnQudmFsdWUgPSAnJ1xuICAgIGRyb3Bab25lUmVmLmN1cnJlbnQ/LmZvY3VzKClcbiAgfVxuXG4gIGZ1bmN0aW9uIGhhbmRsZURyb3Bab25lS2V5RG93bihldmVudDogS2V5Ym9hcmRFdmVudDxIVE1MRGl2RWxlbWVudD4pIHtcbiAgICBpZiAoZXZlbnQua2V5ID09PSAnRW50ZXInIHx8IGV2ZW50LmtleSA9PT0gJyAnKSB7XG4gICAgICBldmVudC5wcmV2ZW50RGVmYXVsdCgpXG4gICAgICBvcGVuRmlsZVBpY2tlcigpXG4gICAgfVxuICB9XG5cbiAgZnVuY3Rpb24gaGFuZGxlRHJhZ0VudGVyKGV2ZW50OiBEcmFnRXZlbnQ8SFRNTERpdkVsZW1lbnQ+KSB7XG4gICAgZXZlbnQucHJldmVudERlZmF1bHQoKVxuICAgIGlmICh1cGxvYWRNdXRhdGlvbi5pc0xvYWRpbmcpIHJldHVyblxuICAgIGRyYWdEZXB0aFJlZi5jdXJyZW50ICs9IDFcbiAgICBzZXRJc0RyYWdBY3RpdmUodHJ1ZSlcbiAgfVxuXG4gIGZ1bmN0aW9uIGhhbmRsZURyYWdPdmVyKGV2ZW50OiBEcmFnRXZlbnQ8SFRNTERpdkVsZW1lbnQ+KSB7XG4gICAgZXZlbnQucHJldmVudERlZmF1bHQoKVxuICAgIGV2ZW50LmRhdGFUcmFuc2Zlci5kcm9wRWZmZWN0ID0gdXBsb2FkTXV0YXRpb24uaXNMb2FkaW5nID8gJ25vbmUnIDogJ2NvcHknXG4gIH1cblxuICBmdW5jdGlvbiBoYW5kbGVEcmFnTGVhdmUoZXZlbnQ6IERyYWdFdmVudDxIVE1MRGl2RWxlbWVudD4pIHtcbiAgICBldmVudC5wcmV2ZW50RGVmYXVsdCgpXG4gICAgZHJhZ0RlcHRoUmVmLmN1cnJlbnQgPSBNYXRoLm1heCgwLCBkcmFnRGVwdGhSZWYuY3VycmVudCAtIDEpXG4gICAgaWYgKGRyYWdEZXB0aFJlZi5jdXJyZW50ID09PSAwKSBzZXRJc0RyYWdBY3RpdmUoZmFsc2UpXG4gIH1cblxuICBmdW5jdGlvbiBoYW5kbGVEcm9wKGV2ZW50OiBEcmFnRXZlbnQ8SFRNTERpdkVsZW1lbnQ+KSB7XG4gICAgZXZlbnQucHJldmVudERlZmF1bHQoKVxuICAgIGRyYWdEZXB0aFJlZi5jdXJyZW50ID0gMFxuICAgIHNldElzRHJhZ0FjdGl2ZShmYWxzZSlcbiAgICBpZiAodXBsb2FkTXV0YXRpb24uaXNMb2FkaW5nKSByZXR1cm5cblxuICAgIGlmIChldmVudC5kYXRhVHJhbnNmZXIuZmlsZXMubGVuZ3RoICE9PSAxKSB7XG4gICAgICBzZXRTZWxlY3RlZEZpbGUobnVsbClcbiAgICAgIHNldFZhbGlkYXRpb25FcnJvcignQ2hvb3NlIGV4YWN0bHkgb25lIC50eHQgdHJhbnNjcmlwdCBwZXIgdXBsb2FkLicpXG4gICAgICB1cGxvYWRNdXRhdGlvbi5yZXNldCgpXG4gICAgICByZXR1cm5cbiAgICB9XG5cbiAgICBzZWxlY3RGaWxlKGV2ZW50LmRhdGFUcmFuc2Zlci5maWxlc1swXSlcbiAgfVxuXG4gIGZ1bmN0aW9uIGhhbmRsZVN1Ym1pdChldmVudDogRm9ybUV2ZW50PEhUTUxGb3JtRWxlbWVudD4pIHtcbiAgICBldmVudC5wcmV2ZW50RGVmYXVsdCgpXG4gICAgY29uc3QgZXJyb3IgPSB2YWxpZGF0ZUZpbGUoc2VsZWN0ZWRGaWxlKVxuICAgIGlmIChlcnJvcikge1xuICAgICAgc2V0VmFsaWRhdGlvbkVycm9yKGVycm9yKVxuICAgICAgcmV0dXJuXG4gICAgfVxuICAgIHVwbG9hZE11dGF0aW9uLm11dGF0ZShzZWxlY3RlZEZpbGUgYXMgRmlsZSlcbiAgfVxuXG4gIGNvbnN0IGFwaUVycm9yID1cbiAgICB1cGxvYWRNdXRhdGlvbi5lcnJvciBpbnN0YW5jZW9mIEFwaUVycm9yXG4gICAgICA/IHVwbG9hZE11dGF0aW9uLmVycm9yLm1lc3NhZ2VcbiAgICAgIDogdXBsb2FkTXV0YXRpb24uaXNFcnJvclxuICAgICAgICA/ICdBbiB1bmV4cGVjdGVkIGVycm9yIG9jY3VycmVkIHdoaWxlIHVwbG9hZGluZyB0aGUgdHJhbnNjcmlwdC4nXG4gICAgICAgIDogbnVsbFxuXG4gIHJldHVybiAoXG4gICAgPHNlY3Rpb24gY2xhc3NOYW1lPVwidXBsb2FkLXBhZ2VcIiBhcmlhLWxhYmVsbGVkYnk9XCJ1cGxvYWQtdGl0bGVcIj5cbiAgICAgIDxCcmVhZGNydW1ic1xuICAgICAgICBpdGVtcz17W1xuICAgICAgICAgIHsgbGFiZWw6ICdUcmFuc2NyaXB0cycsIHRvOiAnLycgfSxcbiAgICAgICAgICB7IGxhYmVsOiAnVXBsb2FkIHRyYW5zY3JpcHQnIH0sXG4gICAgICAgIF19XG4gICAgICAvPlxuXG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cInBhZ2UtaGVhZGVyIHVwbG9hZC1wYWdlLWhlYWRlclwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInBhZ2UtaGVhZGVyX19jb250ZW50XCI+XG4gICAgICAgICAgPHAgY2xhc3NOYW1lPVwiZXllYnJvd1wiPk5ldyB0cmFuc2NyaXB0PC9wPlxuICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJwYWdlLXRpdGxlXCIgaWQ9XCJ1cGxvYWQtdGl0bGVcIj5VcGxvYWQgdHJhbnNjcmlwdDwvaDI+XG4gICAgICAgICAgPHAgY2xhc3NOYW1lPVwicGFnZS1kZXNjcmlwdGlvblwiPlxuICAgICAgICAgICAgQWRkIG9uZSBtZWV0aW5nIHRyYW5zY3JpcHQgdG8gdGhlIHdvcmtzcGFjZS4gQW5hbHlzaXMgc3RhcnRzIG9ubHlcbiAgICAgICAgICAgIHdoZW4geW91IGluaXRpYXRlIGl0IGZyb20gdGhlIHRyYW5zY3JpcHQgcmVjb3JkLlxuICAgICAgICAgIDwvcD5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cblxuICAgICAge3VwbG9hZE11dGF0aW9uLmlzU3VjY2VzcyA/IChcbiAgICAgICAgPGRpdlxuICAgICAgICAgIGNsYXNzTmFtZT1cInVwbG9hZC1jb21wbGV0ZSBzdXJmYWNlXCJcbiAgICAgICAgICByZWY9e3N1Y2Nlc3NSZWZ9XG4gICAgICAgICAgcm9sZT1cInN0YXR1c1wiXG4gICAgICAgICAgdGFiSW5kZXg9ey0xfVxuICAgICAgICA+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ1cGxvYWQtY29tcGxldGVfX21hcmtcIiBhcmlhLWhpZGRlbj1cInRydWVcIj7inJM8L2Rpdj5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJleWVicm93XCI+VXBsb2FkIGNvbXBsZXRlPC9wPlxuICAgICAgICAgIDxoMz57dXBsb2FkTXV0YXRpb24uZGF0YS5maWxlX25hbWV9PC9oMz5cbiAgICAgICAgICA8cD5cbiAgICAgICAgICAgIFRoZSB0cmFuc2NyaXB0IGlzIHN0b3JlZCBhbmQgcmVhZHkgZm9yIHNwZWFrZXItdHVybiByZXZpZXcgYW5kXG4gICAgICAgICAgICBwcm9jZXNzaW5nLiBBbmFseXNpcyBoYXMgbm90IHN0YXJ0ZWQuXG4gICAgICAgICAgPC9wPlxuICAgICAgICAgIDxkbD5cbiAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgIDxkdD5TdGF0dXM8L2R0PlxuICAgICAgICAgICAgICA8ZGQgY2xhc3NOYW1lPVwic3RhdHVzLWJhZGdlIHN0YXR1cy1iYWRnZS0tcmVhZHlcIj5cbiAgICAgICAgICAgICAgICB7dXBsb2FkTXV0YXRpb24uZGF0YS5zdGF0dXMucmVwbGFjZSgvXy9nLCAnICcpfVxuICAgICAgICAgICAgICA8L2RkPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICA8ZHQ+VG9rZW4gY291bnQ8L2R0PlxuICAgICAgICAgICAgICA8ZGQ+e3VwbG9hZE11dGF0aW9uLmRhdGEudG9rZW5fY291bnQudG9Mb2NhbGVTdHJpbmcoKX08L2RkPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kbD5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInVwbG9hZC1jb21wbGV0ZV9fYWN0aW9uc1wiPlxuICAgICAgICAgICAgPExpbmtcbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYnV0dG9uIGJ1dHRvbi0tcHJpbWFyeVwiXG4gICAgICAgICAgICAgIHRvPXtgL3RyYW5zY3JpcHRzLyR7dXBsb2FkTXV0YXRpb24uZGF0YS5pZH1gfVxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICBWaWV3IHRyYW5zY3JpcHRcbiAgICAgICAgICAgIDwvTGluaz5cbiAgICAgICAgICAgIDxMaW5rIGNsYXNzTmFtZT1cImJ1dHRvbiBidXR0b24tLXNlY29uZGFyeVwiIHRvPVwiL1wiPlxuICAgICAgICAgICAgICBCYWNrIHRvIHRyYW5zY3JpcHRzXG4gICAgICAgICAgICA8L0xpbms+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgKSA6IChcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ1cGxvYWQtd29ya3NwYWNlXCI+XG4gICAgICAgICAgPGZvcm0gY2xhc3NOYW1lPVwidXBsb2FkLWZvcm0gc3VyZmFjZVwiIG9uU3VibWl0PXtoYW5kbGVTdWJtaXR9IG5vVmFsaWRhdGU+XG4gICAgICAgICAgICA8aW5wdXRcbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidmlzdWFsbHktaGlkZGVuXCJcbiAgICAgICAgICAgICAgaWQ9XCJ0cmFuc2NyaXB0LWZpbGVcIlxuICAgICAgICAgICAgICByZWY9e2ZpbGVJbnB1dFJlZn1cbiAgICAgICAgICAgICAgbmFtZT1cImZpbGVcIlxuICAgICAgICAgICAgICB0eXBlPVwiZmlsZVwiXG4gICAgICAgICAgICAgIGFjY2VwdD1cIi50eHQsdGV4dC9wbGFpblwiXG4gICAgICAgICAgICAgIGFyaWEtbGFiZWw9XCJDaG9vc2UgYSB0cmFuc2NyaXB0IGZpbGVcIlxuICAgICAgICAgICAgICBvbkNoYW5nZT17aGFuZGxlRmlsZUNoYW5nZX1cbiAgICAgICAgICAgICAgZGlzYWJsZWQ9e3VwbG9hZE11dGF0aW9uLmlzTG9hZGluZ31cbiAgICAgICAgICAgIC8+XG5cbiAgICAgICAgICAgIDxkaXZcbiAgICAgICAgICAgICAgcmVmPXtkcm9wWm9uZVJlZn1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgdXBsb2FkLWRyb3Atem9uZSR7aXNEcmFnQWN0aXZlID8gJyBpcy1kcmFnLWFjdGl2ZScgOiAnJ30ke3VwbG9hZE11dGF0aW9uLmlzTG9hZGluZyA/ICcgaXMtZGlzYWJsZWQnIDogJyd9YH1cbiAgICAgICAgICAgICAgcm9sZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgIHRhYkluZGV4PXt1cGxvYWRNdXRhdGlvbi5pc0xvYWRpbmcgPyAtMSA6IDB9XG4gICAgICAgICAgICAgIGFyaWEtY29udHJvbHM9XCJ0cmFuc2NyaXB0LWZpbGVcIlxuICAgICAgICAgICAgICBhcmlhLWRpc2FibGVkPXt1cGxvYWRNdXRhdGlvbi5pc0xvYWRpbmd9XG4gICAgICAgICAgICAgIG9uQ2xpY2s9e29wZW5GaWxlUGlja2VyfVxuICAgICAgICAgICAgICBvbktleURvd249e2hhbmRsZURyb3Bab25lS2V5RG93bn1cbiAgICAgICAgICAgICAgb25EcmFnRW50ZXI9e2hhbmRsZURyYWdFbnRlcn1cbiAgICAgICAgICAgICAgb25EcmFnT3Zlcj17aGFuZGxlRHJhZ092ZXJ9XG4gICAgICAgICAgICAgIG9uRHJhZ0xlYXZlPXtoYW5kbGVEcmFnTGVhdmV9XG4gICAgICAgICAgICAgIG9uRHJvcD17aGFuZGxlRHJvcH1cbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidXBsb2FkLWRyb3Atem9uZV9faWNvblwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPuKGkTwvc3Bhbj5cbiAgICAgICAgICAgICAgPHN0cm9uZz5cbiAgICAgICAgICAgICAgICB7aXNEcmFnQWN0aXZlID8gJ1JlbGVhc2UgdG8gc2VsZWN0IHRoaXMgdHJhbnNjcmlwdCcgOiAnRHJvcCBhIC50eHQgdHJhbnNjcmlwdCBoZXJlJ31cbiAgICAgICAgICAgICAgPC9zdHJvbmc+XG4gICAgICAgICAgICAgIDxzcGFuPm9yIGNob29zZSBhIGZpbGU8L3NwYW4+XG4gICAgICAgICAgICAgIDxzbWFsbD5PbmUgbm9uLWVtcHR5IFVURi04IC50eHQgZmlsZTwvc21hbGw+XG4gICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAge3NlbGVjdGVkRmlsZSA/IChcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzZWxlY3RlZC1maWxlLWNhcmRcIiBhcmlhLWxpdmU9XCJwb2xpdGVcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNlbGVjdGVkLWZpbGUtY2FyZF9fZGV0YWlsc1wiPlxuICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwic2VsZWN0ZWQtZmlsZS1jYXJkX19zdGF0dXNcIj5WYWxpZCAudHh0IGZpbGU8L3NwYW4+XG4gICAgICAgICAgICAgICAgICA8c3Ryb25nPntzZWxlY3RlZEZpbGUubmFtZX08L3N0cm9uZz5cbiAgICAgICAgICAgICAgICAgIDxzcGFuPntmb3JtYXRGaWxlU2l6ZShzZWxlY3RlZEZpbGUuc2l6ZSl9PC9zcGFuPlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic2VsZWN0ZWQtZmlsZS1jYXJkX19hY3Rpb25zXCI+XG4gICAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJ1dHRvbiBidXR0b24tLWdob3N0XCJcbiAgICAgICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgICAgIGRpc2FibGVkPXt1cGxvYWRNdXRhdGlvbi5pc0xvYWRpbmd9XG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29wZW5GaWxlUGlja2VyfVxuICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICBDaG9vc2UgYW5vdGhlclxuICAgICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJ1dHRvbiBidXR0b24tLWdob3N0IHNlbGVjdGVkLWZpbGUtY2FyZF9fcmVtb3ZlXCJcbiAgICAgICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgICAgIGRpc2FibGVkPXt1cGxvYWRNdXRhdGlvbi5pc0xvYWRpbmd9XG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9e3JlbW92ZUZpbGV9XG4gICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgIFJlbW92ZVxuICAgICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgKSA6IG51bGx9XG5cbiAgICAgICAgICAgIHt2YWxpZGF0aW9uRXJyb3IgPyAoXG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYWxlcnQgYWxlcnQtLWVycm9yIHVwbG9hZC1hbGVydFwiIHJvbGU9XCJhbGVydFwiPlxuICAgICAgICAgICAgICAgIDxzdHJvbmc+RmlsZSBub3QgYWNjZXB0ZWQ8L3N0cm9uZz5cbiAgICAgICAgICAgICAgICA8cD57dmFsaWRhdGlvbkVycm9yfTwvcD5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApIDogbnVsbH1cblxuICAgICAgICAgICAge2FwaUVycm9yID8gKFxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImFsZXJ0IGFsZXJ0LS1lcnJvciB1cGxvYWQtYWxlcnRcIiByb2xlPVwiYWxlcnRcIj5cbiAgICAgICAgICAgICAgICA8c3Ryb25nPlVwbG9hZCBjb3VsZCBub3QgYmUgY29tcGxldGVkPC9zdHJvbmc+XG4gICAgICAgICAgICAgICAgPHA+e2FwaUVycm9yfTwvcD5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApIDogbnVsbH1cblxuICAgICAgICAgICAge3VwbG9hZE11dGF0aW9uLmlzTG9hZGluZyA/IChcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ1cGxvYWQtcHJvZ3Jlc3NcIiByb2xlPVwic3RhdHVzXCIgYXJpYS1saXZlPVwicG9saXRlXCI+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwic3Bpbm5lclwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiIC8+XG4gICAgICAgICAgICAgICAgPHNwYW4+VXBsb2FkaW5nIHRyYW5zY3JpcHQuIEFuYWx5c2lzIGhhcyBub3Qgc3RhcnRlZC48L3NwYW4+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgKSA6IG51bGx9XG5cbiAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYnV0dG9uIGJ1dHRvbi0tcHJpbWFyeSB1cGxvYWQtc3VibWl0XCJcbiAgICAgICAgICAgICAgdHlwZT1cInN1Ym1pdFwiXG4gICAgICAgICAgICAgIGRpc2FibGVkPXshc2VsZWN0ZWRGaWxlIHx8IHVwbG9hZE11dGF0aW9uLmlzTG9hZGluZ31cbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAge3VwbG9hZE11dGF0aW9uLmlzTG9hZGluZyA/ICdVcGxvYWRpbmcuLi4nIDogJ1VwbG9hZCB0cmFuc2NyaXB0J31cbiAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgIDwvZm9ybT5cblxuICAgICAgICAgIDxhc2lkZSBjbGFzc05hbWU9XCJ1cGxvYWQtcmVxdWlyZW1lbnRzIHN1cmZhY2VcIiBhcmlhLWxhYmVsbGVkYnk9XCJyZXF1aXJlbWVudHMtdGl0bGVcIj5cbiAgICAgICAgICAgIDxoMyBpZD1cInJlcXVpcmVtZW50cy10aXRsZVwiPkJlZm9yZSB5b3UgdXBsb2FkPC9oMz5cbiAgICAgICAgICAgIDxkbD5cbiAgICAgICAgICAgICAgPGRpdj48ZHQ+RmlsZSB0eXBlPC9kdD48ZGQ+LnR4dDwvZGQ+PC9kaXY+XG4gICAgICAgICAgICAgIDxkaXY+PGR0PkVuY29kaW5nPC9kdD48ZGQ+VVRGLTg8L2RkPjwvZGl2PlxuICAgICAgICAgICAgICA8ZGl2PjxkdD5RdWFudGl0eTwvZHQ+PGRkPk9uZSB0cmFuc2NyaXB0IHBlciB1cGxvYWQ8L2RkPjwvZGl2PlxuICAgICAgICAgICAgPC9kbD5cbiAgICAgICAgICAgIDxwPlxuICAgICAgICAgICAgICBVcGxvYWRpbmcgc3RvcmVzIHRoZSB0cmFuc2NyaXB0IG9ubHkuIFlvdSB3aWxsIHJldmlldyBpdCBhbmQgc3RhcnRcbiAgICAgICAgICAgICAgYW5hbHlzaXMgZnJvbSB0aGUgdHJhbnNjcmlwdCBkZXRhaWwgcGFnZS5cbiAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgIDxvbCBjbGFzc05hbWU9XCJ1cGxvYWQtbmV4dC1zdGVwc1wiPlxuICAgICAgICAgICAgICA8bGk+VXBsb2FkIHRoZSB0cmFuc2NyaXB0IHJlY29yZC48L2xpPlxuICAgICAgICAgICAgICA8bGk+T3BlbiB0aGUgcmVjb3JkIGFuZCBzdGFydCBhbmFseXNpcy48L2xpPlxuICAgICAgICAgICAgICA8bGk+UmV2aWV3IGZpbmFsIHNpZ25hbHMgYW5kIHN1cHBvcnRpbmcgZXZpZGVuY2UuPC9saT5cbiAgICAgICAgICAgIDwvb2w+XG4gICAgICAgICAgPC9hc2lkZT5cbiAgICAgICAgPC9kaXY+XG4gICAgICApfVxuICAgIDwvc2VjdGlvbj5cbiAgKVxufVxuIl19

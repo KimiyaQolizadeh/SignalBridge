@@ -1,0 +1,232 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/PipelineStatus.tsx");import RefreshRuntime from "/@react-refresh";
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("@vitejs/plugin-react can't detect preamble. Something is wrong. See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201");
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    RefreshRuntime.register(type, "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/PipelineStatus.tsx " + id);
+  };
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _jsxFileName = "D:\\WorkSpace\\Optimize_Finance\\signalbridge\\frontend\\src\\components\\PipelineStatus.tsx";
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=165d986c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+const stages = [{
+  key: "parsing",
+  label: "Transcript parsing"
+}, {
+  key: "classifying_speakers",
+  label: "Speaker classification"
+}, {
+  key: "extracting_candidates",
+  label: "Signal extraction"
+}, {
+  key: "validating_evidence",
+  label: "Evidence validation"
+}, {
+  key: "scoring_signals",
+  label: "Business scoring"
+}, {
+  key: "deduplicating",
+  label: "Deduplication"
+}, {
+  key: "reranking",
+  label: "Final ranking"
+}];
+export function PipelineStatus({
+  status,
+  analysisComplete,
+  failed
+}) {
+  const activeIndex = stages.findIndex((stage) => stage.key === status?.current_stage);
+  const steps = /* @__PURE__ */ _jsxDEV("ol", {
+    className: "pipeline-steps",
+    children: stages.map((stage, index) => {
+      const state = analysisComplete ? "completed" : failed && index === activeIndex ? "failed" : index < activeIndex ? "completed" : index === activeIndex ? "active" : "pending";
+      return /* @__PURE__ */ _jsxDEV("li", {
+        className: `pipeline-step pipeline-step--${state}`,
+        children: [/* @__PURE__ */ _jsxDEV("span", {
+          className: "pipeline-step__marker",
+          "aria-hidden": "true",
+          children: state === "completed" ? "\u2713" : index + 1
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 39,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("span", {
+          children: [/* @__PURE__ */ _jsxDEV("strong", {
+            children: stage.label
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 43,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV("small", {
+            children: state === "completed" ? "Complete" : state === "active" ? "In progress" : state === "failed" ? "Failed" : "Pending"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 44,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 42,
+          columnNumber: 13
+        }, this)]
+      }, stage.key, true, {
+        fileName: _jsxFileName,
+        lineNumber: 38,
+        columnNumber: 11
+      }, this);
+    })
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 26,
+    columnNumber: 5
+  }, this);
+  if (analysisComplete && !failed) {
+    return /* @__PURE__ */ _jsxDEV("details", {
+      className: "pipeline-disclosure",
+      children: [/* @__PURE__ */ _jsxDEV("summary", {
+        children: [/* @__PURE__ */ _jsxDEV("span", {
+          children: [/* @__PURE__ */ _jsxDEV("strong", {
+            children: "Analysis complete"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 64,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("small", {
+            children: "7 processing stages"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 64,
+            columnNumber: 51
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 64,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("span", {
+          "aria-hidden": "true",
+          children: "+"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 65,
+          columnNumber: 11
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 63,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("div", {
+        className: "pipeline-disclosure__content",
+        children: steps
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 67,
+        columnNumber: 9
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 62,
+      columnNumber: 7
+    }, this);
+  }
+  return /* @__PURE__ */ _jsxDEV("section", {
+    className: "pipeline-panel",
+    "aria-labelledby": "pipeline-status-title",
+    children: [/* @__PURE__ */ _jsxDEV("div", {
+      className: "pipeline-panel__header",
+      children: [/* @__PURE__ */ _jsxDEV("div", {
+        children: [/* @__PURE__ */ _jsxDEV("p", {
+          className: "eyebrow",
+          children: "Processing control"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 76,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("h3", {
+          id: "pipeline-status-title",
+          children: "Analysis pipeline"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 77,
+          columnNumber: 11
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 75,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("span", {
+        className: "pipeline-panel__summary",
+        children: failed ? "Needs attention" : status?.status === "queued" ? "Starting" : activeIndex >= 0 ? `Stage ${activeIndex + 1} of 7` : "Not started"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 79,
+        columnNumber: 9
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 74,
+      columnNumber: 7
+    }, this), steps]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 73,
+    columnNumber: 5
+  }, this);
+}
+_c = PipelineStatus;
+var _c;
+$RefreshReg$(_c, "PipelineStatus");
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+  import.meta.hot.accept();
+  if (!window.__vite_plugin_react_timeout) {
+    window.__vite_plugin_react_timeout = setTimeout(() => {
+      window.__vite_plugin_react_timeout = 0;
+      RefreshRuntime.performReactRefresh();
+    }, 30);
+  }
+}
+
+/*{
+  "version": 3,
+  "mappings": ";;;;;;;;;;;;;;;;AAQA,MAAMA,SAAS,CACb;AAAA,EAAEC,KAAK;AAAA,EAAWC,OAAO;AAAqB,GAC9C;AAAA,EAAED,KAAK;AAAA,EAAwBC,OAAO;AAAyB,GAC/D;AAAA,EAAED,KAAK;AAAA,EAAyBC,OAAO;AAAoB,GAC3D;AAAA,EAAED,KAAK;AAAA,EAAuBC,OAAO;AAAsB,GAC3D;AAAA,EAAED,KAAK;AAAA,EAAmBC,OAAO;AAAmB,GACpD;AAAA,EAAED,KAAK;AAAA,EAAiBC,OAAO;AAAgB,GAC/C;AAAA,EAAED,KAAK;AAAA,EAAaC,OAAO;AAAgB,CAAC;AAGvC,gBAASC,eAAe;AAAA,EAC7BC;AAAAA,EACAC;AAAAA,EACAC;AACmB,GAAG;AACtB,QAAMC,cAAcP,OAAOQ,UAAWC,WAAUA,MAAMR,QAAQG,QAAQM,aAAa;AACnF,QAAMC,QACJC;AAAA,IAAIC,WAAU;AAAA,IAAgBC,UAC3Bd,OAAOe,IAAI,CAACN,OAAOO,UAAU;AAC5B,YAAMC,QAAQZ,mBACV,cACAC,UAAUU,UAAUT,cAClB,WACAS,QAAQT,cACN,cACAS,UAAUT,cACR,WACA;AACV,aACEK;AAAA,QAAIC,WAAW,gCAAgCI;AAAAA,QAAQH,WACrDF;AAAA,UAAMC,WAAU;AAAA,UAAwB,eAAY;AAAA,UAAMC,UACvDG,UAAU,cAAc,WAAMD,QAAQ;AAAA,QAAC;AAAA;AAAAE;AAAA;AAAA,eACpC,GACNN;AAAA,qBACEA;AAAA,sBAASH,MAAMP;AAAAA,UAAK;AAAA;AAAAgB;AAAA;AAAA,iBAAS,GAC7BN;AAAA,sBACGK,UAAU,cACP,aACAA,UAAU,WACR,gBACAA,UAAU,WACR,WACA;AAAA,UAAS;AAAA;AAAAC;AAAA;AAAA,iBACZ,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,eACJ,CAAC;AAAA,SAfoDT,MAAMR,KAAG;AAAA;AAAAiB;AAAA;AAAA,aAgBlE;AAAA,IAER,CAAC;AAAA,EAAC;AAAA;AAAAA;AAAA;AAAA,SACA;AAGN,MAAIb,oBAAoB,CAACC,QAAQ;AAC/B,WACEM;AAAA,MAASC,WAAU;AAAA,MAAqBC,WACtCF;AAAA,mBACEA;AAAA,qBAAMA;AAAA,sBAAQ;AAAA,UAAiB;AAAA;AAAAM;AAAA;AAAA,iBAAQ,GAACN;AAAA,sBAAO;AAAA,UAAmB;AAAA;AAAAM;AAAA;AAAA,iBAAO,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,eAAM,GAChFN;AAAA,UAAM,eAAY;AAAA,UAAME,UAAC;AAAA,QAAC;AAAA;AAAAI;AAAA;AAAA,eAAM,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,aAC1B,GACTN;AAAA,QAAKC,WAAU;AAAA,QAA8BC,UAAEH;AAAAA,MAAK;AAAA;AAAAO;AAAA;AAAA,aAAM,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,WACpD;AAAA,EAEb;AAEA,SACEN;AAAA,IAASC,WAAU;AAAA,IAAiB,mBAAgB;AAAA,IAAuBC,WACzEF;AAAA,MAAKC,WAAU;AAAA,MAAwBC,WACrCF;AAAA,mBACEA;AAAA,UAAGC,WAAU;AAAA,UAASC,UAAC;AAAA,QAAkB;AAAA;AAAAI;AAAA;AAAA,eAAG,GAC5CN;AAAA,UAAIO,IAAG;AAAA,UAAuBL,UAAC;AAAA,QAAiB;AAAA;AAAAI;AAAA;AAAA,eAAI,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,aAClD,GACLN;AAAA,QAAMC,WAAU;AAAA,QAAyBC,UACtCR,SACG,oBACAF,QAAQA,WAAW,WACjB,aACAG,eAAe,IACb,SAASA,cAAc,WACvB;AAAA,MAAa;AAAA;AAAAW;AAAA;AAAA,aACjB,CAAC;AAAA;AAAA;AAAAA;AAAA;AAAA,WACJ,GACJP,KAAK;AAAA;AAAA;AAAAO;AAAA;AAAA,SACC;AAEb;AAACE,KAzEejB;AAAc;AAAAkB",
+  "names": [
+    "stages",
+    "key",
+    "label",
+    "PipelineStatus",
+    "status",
+    "analysisComplete",
+    "failed",
+    "activeIndex",
+    "findIndex",
+    "stage",
+    "current_stage",
+    "steps",
+    "_jsxDEV",
+    "className",
+    "children",
+    "map",
+    "index",
+    "state",
+    "_jsxFileName",
+    "id",
+    "_c",
+    "$RefreshReg$"
+  ],
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/PipelineStatus.tsx"
+  ],
+  "file": "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/PipelineStatus.tsx",
+  "sourcesContent": [
+    "import type { ProcessingStatus } from '../types/transcript'\n\ninterface PipelineStatusProps {\n  status: ProcessingStatus | undefined\n  analysisComplete: boolean\n  failed: boolean\n}\n\nconst stages = [\n  { key: 'parsing', label: 'Transcript parsing' },\n  { key: 'classifying_speakers', label: 'Speaker classification' },\n  { key: 'extracting_candidates', label: 'Signal extraction' },\n  { key: 'validating_evidence', label: 'Evidence validation' },\n  { key: 'scoring_signals', label: 'Business scoring' },\n  { key: 'deduplicating', label: 'Deduplication' },\n  { key: 'reranking', label: 'Final ranking' },\n] as const\n\nexport function PipelineStatus({\n  status,\n  analysisComplete,\n  failed,\n}: PipelineStatusProps) {\n  const activeIndex = stages.findIndex((stage) => stage.key === status?.current_stage)\n  const steps = (\n    <ol className=\"pipeline-steps\">\n      {stages.map((stage, index) => {\n        const state = analysisComplete\n          ? 'completed'\n          : failed && index === activeIndex\n            ? 'failed'\n            : index < activeIndex\n              ? 'completed'\n              : index === activeIndex\n                ? 'active'\n                : 'pending'\n        return (\n          <li className={`pipeline-step pipeline-step--${state}`} key={stage.key}>\n            <span className=\"pipeline-step__marker\" aria-hidden=\"true\">\n              {state === 'completed' ? '✓' : index + 1}\n            </span>\n            <span>\n              <strong>{stage.label}</strong>\n              <small>\n                {state === 'completed'\n                  ? 'Complete'\n                  : state === 'active'\n                    ? 'In progress'\n                    : state === 'failed'\n                      ? 'Failed'\n                      : 'Pending'}\n              </small>\n            </span>\n          </li>\n        )\n      })}\n    </ol>\n  )\n\n  if (analysisComplete && !failed) {\n    return (\n      <details className=\"pipeline-disclosure\">\n        <summary>\n          <span><strong>Analysis complete</strong><small>7 processing stages</small></span>\n          <span aria-hidden=\"true\">+</span>\n        </summary>\n        <div className=\"pipeline-disclosure__content\">{steps}</div>\n      </details>\n    )\n  }\n\n  return (\n    <section className=\"pipeline-panel\" aria-labelledby=\"pipeline-status-title\">\n      <div className=\"pipeline-panel__header\">\n        <div>\n          <p className=\"eyebrow\">Processing control</p>\n          <h3 id=\"pipeline-status-title\">Analysis pipeline</h3>\n        </div>\n        <span className=\"pipeline-panel__summary\">\n          {failed\n            ? 'Needs attention'\n            : status?.status === 'queued'\n              ? 'Starting'\n              : activeIndex >= 0\n                ? `Stage ${activeIndex + 1} of 7`\n                : 'Not started'}\n        </span>\n      </div>\n      {steps}\n    </section>\n  )\n}"
+  ]
+}*/
+
+//# sourceMappingURL=data:application/json;base64,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LGVBQUcsR0FDNUNOO0FBQUEsVUFBSU8sSUFBRztBQUFBLFVBQXVCTCxVQUFDO0FBQUEsUUFBaUI7QUFBQTtBQUFBSTtBQUFBO0FBQUEsZUFBSSxDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsYUFDbEQsR0FDTE47QUFBQSxRQUFNQyxXQUFVO0FBQUEsUUFBeUJDLFVBQ3RDUixTQUNHLG9CQUNBRixRQUFRQSxXQUFXLFdBQ2pCLGFBQ0FHLGVBQWUsSUFDYixTQUFTQSxjQUFjLFdBQ3ZCO0FBQUEsTUFBYTtBQUFBO0FBQUFXO0FBQUE7QUFBQSxhQUNqQixDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsV0FDSixHQUNKUCxLQUFLO0FBQUE7QUFBQTtBQUFBTztBQUFBO0FBQUEsU0FDQztBQUViO0FBQUNFLEtBekVlakI7QUFBYztBQUFBa0IiLCJuYW1lcyI6WyJzdGFnZXMiLCJrZXkiLCJsYWJlbCIsIlBpcGVsaW5lU3RhdHVzIiwic3RhdHVzIiwiYW5hbHlzaXNDb21wbGV0ZSIsImZhaWxlZCIsImFjdGl2ZUluZGV4IiwiZmluZEluZGV4Iiwic3RhZ2UiLCJjdXJyZW50X3N0YWdlIiwic3RlcHMiLCJfanN4REVWIiwiY2xhc3NOYW1lIiwiY2hpbGRyZW4iLCJtYXAiLCJpbmRleCIsInN0YXRlIiwiX2pzeEZpbGVOYW1lIiwiaWQiLCJfYyIsIiRSZWZyZXNoUmVnJCJdLCJzb3VyY2VzIjpbIkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9QaXBlbGluZVN0YXR1cy50c3giXSwiZmlsZSI6IkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9QaXBlbGluZVN0YXR1cy50c3giLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgdHlwZSB7IFByb2Nlc3NpbmdTdGF0dXMgfSBmcm9tICcuLi90eXBlcy90cmFuc2NyaXB0J1xuXG5pbnRlcmZhY2UgUGlwZWxpbmVTdGF0dXNQcm9wcyB7XG4gIHN0YXR1czogUHJvY2Vzc2luZ1N0YXR1cyB8IHVuZGVmaW5lZFxuICBhbmFseXNpc0NvbXBsZXRlOiBib29sZWFuXG4gIGZhaWxlZDogYm9vbGVhblxufVxuXG5jb25zdCBzdGFnZXMgPSBbXG4gIHsga2V5OiAncGFyc2luZycsIGxhYmVsOiAnVHJhbnNjcmlwdCBwYXJzaW5nJyB9LFxuICB7IGtleTogJ2NsYXNzaWZ5aW5nX3NwZWFrZXJzJywgbGFiZWw6ICdTcGVha2VyIGNsYXNzaWZpY2F0aW9uJyB9LFxuICB7IGtleTogJ2V4dHJhY3RpbmdfY2FuZGlkYXRlcycsIGxhYmVsOiAnU2lnbmFsIGV4dHJhY3Rpb24nIH0sXG4gIHsga2V5OiAndmFsaWRhdGluZ19ldmlkZW5jZScsIGxhYmVsOiAnRXZpZGVuY2UgdmFsaWRhdGlvbicgfSxcbiAgeyBrZXk6ICdzY29yaW5nX3NpZ25hbHMnLCBsYWJlbDogJ0J1c2luZXNzIHNjb3JpbmcnIH0sXG4gIHsga2V5OiAnZGVkdXBsaWNhdGluZycsIGxhYmVsOiAnRGVkdXBsaWNhdGlvbicgfSxcbiAgeyBrZXk6ICdyZXJhbmtpbmcnLCBsYWJlbDogJ0ZpbmFsIHJhbmtpbmcnIH0sXG5dIGFzIGNvbnN0XG5cbmV4cG9ydCBmdW5jdGlvbiBQaXBlbGluZVN0YXR1cyh7XG4gIHN0YXR1cyxcbiAgYW5hbHlzaXNDb21wbGV0ZSxcbiAgZmFpbGVkLFxufTogUGlwZWxpbmVTdGF0dXNQcm9wcykge1xuICBjb25zdCBhY3RpdmVJbmRleCA9IHN0YWdlcy5maW5kSW5kZXgoKHN0YWdlKSA9PiBzdGFnZS5rZXkgPT09IHN0YXR1cz8uY3VycmVudF9zdGFnZSlcbiAgY29uc3Qgc3RlcHMgPSAoXG4gICAgPG9sIGNsYXNzTmFtZT1cInBpcGVsaW5lLXN0ZXBzXCI+XG4gICAgICB7c3RhZ2VzLm1hcCgoc3RhZ2UsIGluZGV4KSA9PiB7XG4gICAgICAgIGNvbnN0IHN0YXRlID0gYW5hbHlzaXNDb21wbGV0ZVxuICAgICAgICAgID8gJ2NvbXBsZXRlZCdcbiAgICAgICAgICA6IGZhaWxlZCAmJiBpbmRleCA9PT0gYWN0aXZlSW5kZXhcbiAgICAgICAgICAgID8gJ2ZhaWxlZCdcbiAgICAgICAgICAgIDogaW5kZXggPCBhY3RpdmVJbmRleFxuICAgICAgICAgICAgICA/ICdjb21wbGV0ZWQnXG4gICAgICAgICAgICAgIDogaW5kZXggPT09IGFjdGl2ZUluZGV4XG4gICAgICAgICAgICAgICAgPyAnYWN0aXZlJ1xuICAgICAgICAgICAgICAgIDogJ3BlbmRpbmcnXG4gICAgICAgIHJldHVybiAoXG4gICAgICAgICAgPGxpIGNsYXNzTmFtZT17YHBpcGVsaW5lLXN0ZXAgcGlwZWxpbmUtc3RlcC0tJHtzdGF0ZX1gfSBrZXk9e3N0YWdlLmtleX0+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJwaXBlbGluZS1zdGVwX19tYXJrZXJcIiBhcmlhLWhpZGRlbj1cInRydWVcIj5cbiAgICAgICAgICAgICAge3N0YXRlID09PSAnY29tcGxldGVkJyA/ICfinJMnIDogaW5kZXggKyAxfVxuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgPHNwYW4+XG4gICAgICAgICAgICAgIDxzdHJvbmc+e3N0YWdlLmxhYmVsfTwvc3Ryb25nPlxuICAgICAgICAgICAgICA8c21hbGw+XG4gICAgICAgICAgICAgICAge3N0YXRlID09PSAnY29tcGxldGVkJ1xuICAgICAgICAgICAgICAgICAgPyAnQ29tcGxldGUnXG4gICAgICAgICAgICAgICAgICA6IHN0YXRlID09PSAnYWN0aXZlJ1xuICAgICAgICAgICAgICAgICAgICA/ICdJbiBwcm9ncmVzcydcbiAgICAgICAgICAgICAgICAgICAgOiBzdGF0ZSA9PT0gJ2ZhaWxlZCdcbiAgICAgICAgICAgICAgICAgICAgICA/ICdGYWlsZWQnXG4gICAgICAgICAgICAgICAgICAgICAgOiAnUGVuZGluZyd9XG4gICAgICAgICAgICAgIDwvc21hbGw+XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPC9saT5cbiAgICAgICAgKVxuICAgICAgfSl9XG4gICAgPC9vbD5cbiAgKVxuXG4gIGlmIChhbmFseXNpc0NvbXBsZXRlICYmICFmYWlsZWQpIHtcbiAgICByZXR1cm4gKFxuICAgICAgPGRldGFpbHMgY2xhc3NOYW1lPVwicGlwZWxpbmUtZGlzY2xvc3VyZVwiPlxuICAgICAgICA8c3VtbWFyeT5cbiAgICAgICAgICA8c3Bhbj48c3Ryb25nPkFuYWx5c2lzIGNvbXBsZXRlPC9zdHJvbmc+PHNtYWxsPjcgcHJvY2Vzc2luZyBzdGFnZXM8L3NtYWxsPjwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBhcmlhLWhpZGRlbj1cInRydWVcIj4rPC9zcGFuPlxuICAgICAgICA8L3N1bW1hcnk+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicGlwZWxpbmUtZGlzY2xvc3VyZV9fY29udGVudFwiPntzdGVwc308L2Rpdj5cbiAgICAgIDwvZGV0YWlscz5cbiAgICApXG4gIH1cblxuICByZXR1cm4gKFxuICAgIDxzZWN0aW9uIGNsYXNzTmFtZT1cInBpcGVsaW5lLXBhbmVsXCIgYXJpYS1sYWJlbGxlZGJ5PVwicGlwZWxpbmUtc3RhdHVzLXRpdGxlXCI+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cInBpcGVsaW5lLXBhbmVsX19oZWFkZXJcIj5cbiAgICAgICAgPGRpdj5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJleWVicm93XCI+UHJvY2Vzc2luZyBjb250cm9sPC9wPlxuICAgICAgICAgIDxoMyBpZD1cInBpcGVsaW5lLXN0YXR1cy10aXRsZVwiPkFuYWx5c2lzIHBpcGVsaW5lPC9oMz5cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInBpcGVsaW5lLXBhbmVsX19zdW1tYXJ5XCI+XG4gICAgICAgICAge2ZhaWxlZFxuICAgICAgICAgICAgPyAnTmVlZHMgYXR0ZW50aW9uJ1xuICAgICAgICAgICAgOiBzdGF0dXM/LnN0YXR1cyA9PT0gJ3F1ZXVlZCdcbiAgICAgICAgICAgICAgPyAnU3RhcnRpbmcnXG4gICAgICAgICAgICAgIDogYWN0aXZlSW5kZXggPj0gMFxuICAgICAgICAgICAgICAgID8gYFN0YWdlICR7YWN0aXZlSW5kZXggKyAxfSBvZiA3YFxuICAgICAgICAgICAgICAgIDogJ05vdCBzdGFydGVkJ31cbiAgICAgICAgPC9zcGFuPlxuICAgICAgPC9kaXY+XG4gICAgICB7c3RlcHN9XG4gICAgPC9zZWN0aW9uPlxuICApXG59Il19

@@ -1,7 +1,6 @@
 import csv
 import io
 import json
-import re
 
 from sqlalchemy import case, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -15,6 +14,7 @@ from ..models import (
     Transcript,
     TranscriptTurn,
 )
+from .evidence_context import context_payload, context_turns
 
 
 FINAL_COLUMNS = [
@@ -52,11 +52,6 @@ DEBUG_COLUMNS = FINAL_COLUMNS + [
     "duplicate_group_id",
     "is_canonical",
 ]
-
-_REFERENTIAL_EVIDENCE_PATTERN = re.compile(
-    r"\b(it|this|that|there|those|these|they|them)\b", re.IGNORECASE
-)
-
 
 class TranscriptNotFoundError(Exception):
     """Raised when an export is requested for an unknown transcript."""
@@ -157,15 +152,6 @@ def _supporting_evidence(
 
 
 def _adjacent_context(db: Session, candidate: CandidateSignal) -> list[dict]:
-    if not _REFERENTIAL_EVIDENCE_PATTERN.search(candidate.advisor_quote):
-        return []
-    source_ids = (
-        {item for item in candidate.source_turn_ids if isinstance(item, int)}
-        if isinstance(candidate.source_turn_ids, list)
-        else set()
-    )
-    if not source_ids:
-        return []
     turns = list(
         db.scalars(
             select(TranscriptTurn)
@@ -173,24 +159,10 @@ def _adjacent_context(db: Session, candidate: CandidateSignal) -> list[dict]:
             .order_by(TranscriptTurn.turn_index, TranscriptTurn.id)
         ).all()
     )
-    positions = [index for index, turn in enumerate(turns) if turn.id in source_ids]
-    adjacent_positions = {
-        position + offset
-        for position in positions
-        for offset in (-1, 1)
-        if 0 <= position + offset < len(turns)
-        and turns[position + offset].id not in source_ids
-    }
     return [
-        {
-            "turn_id": turns[position].id,
-            "speaker": turns[position].raw_speaker_label,
-            "text": turns[position].text,
-            "timestamp": turns[position].timestamp,
-        }
-        for position in sorted(adjacent_positions)
+        context_payload(turn)
+        for turn in context_turns(candidate, turns, include_source=False)
     ]
-
 
 def _selection_reason(candidate: CandidateSignal, score: SignalScore) -> str:
     threshold = 3.5 if candidate.evidence_strength == "explicit" else 4.0

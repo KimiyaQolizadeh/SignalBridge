@@ -18,14 +18,13 @@ import {
 } from '../api/transcripts'
 import { Breadcrumbs } from '../components/Breadcrumbs'
 import { DiagnosticCandidateCard } from '../components/DiagnosticCandidateCard'
-import { MetricCard } from '../components/MetricCard'
 import { PipelineStatus } from '../components/PipelineStatus'
-import { SignalCard } from '../components/SignalCard'
+import { SignalReviewWorkspace } from '../components/SignalReviewWorkspace'
+import { TranscriptWorkspace } from '../components/TranscriptWorkspace'
 import type {
   FinalSignal,
   ProcessingStatus,
   ProcessingState,
-  SpeakerRole,
   TranscriptTurn,
 } from '../types/transcript'
 
@@ -34,13 +33,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
-
-const speakerLabels: Record<SpeakerRole, string> = {
-  advisor: 'Advisor',
-  optimize_rep: 'Optimize representative',
-  mixed: 'Mixed',
-  unknown: 'Unknown',
-}
 
 const processingStageLabels: Record<string, string> = {
   queued: 'Preparing transcript',
@@ -153,6 +145,7 @@ export function TranscriptDetailPage() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'signals' | 'transcript' | 'diagnostics'>('signals')
   const [selectedTurnId, setSelectedTurnId] = useState<number | null>(null)
+  const [selectedSignal, setSelectedSignal] = useState<FinalSignal | null>(null)
   const [evidenceLocateFailed, setEvidenceLocateFailed] = useState(false)
   const [diagnosticsOpened, setDiagnosticsOpened] = useState(false)
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
@@ -386,6 +379,9 @@ export function TranscriptDetailPage() {
     .filter((signal) => signal.item_type === 'blocker')
     .sort((left, right) => left.rank - right.rank)
   const totalSignals = drivers.length + blockers.length
+  const activeSignal = selectedSignal ?? drivers[0] ?? blockers[0] ?? null
+  const activeEvidenceTurn = activeSignal ? resolveEvidenceTurn({ turns: turnsQuery.data ?? [], advisorQuote: activeSignal.advisor_quote, timestamp: activeSignal.timestamp }) : null
+  const activeTurnId = selectedSignal ? selectedTurnId : activeEvidenceTurn?.id ?? null
   const validatedSignalCount = visibleFinalSignals.filter(
     (signal) => signal.validator_verdict === 'pass',
   ).length
@@ -420,27 +416,42 @@ export function TranscriptDetailPage() {
     }
   }
 
-  function viewEvidence(signal: FinalSignal) {
+  function locateSignal(signal: FinalSignal) {
     const turn = resolveEvidenceTurn({
       turns: turnsQuery.data ?? [],
       advisorQuote: signal.advisor_quote,
       timestamp: signal.timestamp,
     })
     setSelectedTurnId(turn?.id ?? null)
+    setSelectedSignal(signal)
     setEvidenceLocateFailed(turn === null)
-    setActiveTab('transcript')
+    return turn
+  }
+
+  function selectInsight(signal: FinalSignal) {
+    const turn = locateSignal(signal)
     if (turn) {
       window.setTimeout(() => {
-        document.getElementById(`turn-${turn.id}`)?.scrollIntoView({
-          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? 'auto'
-            : 'smooth',
+        document.getElementById(`insight-turn-${turn.id}`)?.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
           block: 'center',
         })
       }, 0)
     }
   }
 
+  function viewEvidence(signal: FinalSignal) {
+    const turn = locateSignal(signal)
+    setActiveTab('transcript')
+    if (turn) {
+      window.setTimeout(() => {
+        document.getElementById(`turn-${turn.id}`)?.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'center',
+        })
+      }, 0)
+    }
+  }
   return (
     <section className="transcript-detail" aria-labelledby="transcript-title">
       <Breadcrumbs
@@ -457,12 +468,7 @@ export function TranscriptDetailPage() {
             <h2 className="page-title" id="transcript-title">{transcript.file_name}</h2>
             <span className={`status-badge status-badge--${status.modifier}`}>{status.label}</span>
           </div>
-          <p className="analysis-header__summary">{status.description}</p>
-          <dl className="analysis-header__metadata">
-            <div><dt>Updated</dt><dd>{formatDate(transcript.updated_at)}</dd></div>
-            <div><dt>Tokens</dt><dd>{numberFormatter.format(transcript.token_count)}</dd></div>
-            <div><dt>Speaker turns</dt><dd>{speakerTurnCount === null ? 'Loading...' : numberFormatter.format(speakerTurnCount)}</dd></div>
-          </dl>
+          <p className="analysis-header__summary">{status.description} <span>Updated {formatDate(transcript.updated_at)}</span></p>
         </div>
         <div className="analysis-header__actions">
           <button className="button button--primary" type="button" disabled={analysisActionDisabled} onClick={runAnalysis}>{actionLabel}</button>
@@ -478,43 +484,8 @@ export function TranscriptDetailPage() {
         </div>
       </header>
 
-      {runsQuery.data?.length ? (
-        <section className="run-history section" aria-labelledby="run-history-title">
-          <div className="section-header">
-            <div>
-              <h3 id="run-history-title">Analysis runs</h3>
-              <p>Full analysis calls extraction again. Replay validation reuses saved candidates and costs less.</p>
-            </div>
-          </div>
-          <div className="run-history__controls">
-            <label>
-              <span>Inspect run</span>
-              <select value={selectedRunId ?? ''} disabled={isProcessing} onChange={(event) => setSelectedRunId(event.target.value || null)}>
-                <option value="">Latest completed run</option>
-                {runsQuery.data.map((run) => (
-                  <option key={run.run_id} value={run.run_id}>
-                    {formatDate(run.started_at)} · {run.run_type} · {run.status}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button className="button button--secondary" type="button" disabled={isProcessing || !selectedRunId} onClick={() => selectedRunId && replayMutation.mutate(selectedRunId)}>
-              {replayMutation.isLoading ? 'Replaying…' : 'Replay validation'}
-            </button>
-          </div>
-          {selectedRunId ? <p className="run-history__selection">Selected run <code>{selectedRunId}</code></p> : <p className="run-history__selection">Latest run <code>{runsQuery.data[0].run_id}</code> · {runsQuery.data[0].run_type}</p>}
-        </section>
-      ) : null}
-
-      <section className="metric-grid analysis-metrics" aria-label="Analysis summary">
-        <MetricCard label="Final signals" value={analysisAvailable ? totalSignals : '—'} detail={`Validated: ${validatedSignalCount} · Needs review: ${needsReviewSignalCount}`} />
-        <MetricCard label="Drivers" value={analysisAvailable ? drivers.length : '—'} detail="Positive decision factors" tone="positive" />
-        <MetricCard label="Blockers" value={analysisAvailable ? blockers.length : '—'} detail="Risks and dependencies" tone="warning" />
-        <MetricCard label="Processing time" value={progressStatus?.elapsed_seconds ? formatElapsed(Math.floor(progressStatus.elapsed_seconds)) : '—'} detail="Most recent run" />
-      </section>
-
       <nav className="analysis-tabs" aria-label="Transcript analysis" role="tablist">
-        {(['signals', 'transcript', 'diagnostics'] as const).map((tab) => (
+        {(['signals', 'transcript'] as const).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -522,21 +493,14 @@ export function TranscriptDetailPage() {
             aria-selected={activeTab === tab}
             aria-controls={tab + '-panel'}
             className={activeTab === tab ? 'active' : ''}
-            onClick={() => {
-              setActiveTab(tab)
-              if (tab === 'diagnostics') setDiagnosticsOpened(true)
-            }}
+            onClick={() => setActiveTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </nav>
 
-      <PipelineStatus
-        status={progressStatus}
-        analysisComplete={analysisAvailable && !isProcessing}
-        failed={pipelineMutation.isError || transcriptFailed || runFailed}
-      />
+
 
 
       <section className="transcript-review section tab-panel" id="transcript-panel" role="tabpanel" hidden={activeTab !== 'transcript'} aria-labelledby="transcript-review-title">
@@ -546,47 +510,16 @@ export function TranscriptDetailPage() {
             <p>{speakerTurnCount === null ? 'Loading speaker turns...' : `${numberFormatter.format(speakerTurnCount)} total speaker turns`}</p>
           </div>
         </div>
-        <div className="transcript-panel">
-          <div className="turns-content">
-            {evidenceLocateFailed ? (
-              <div className="inline-state" role="status">
-                <span>Evidence turn could not be located.</span>
-              </div>
-            ) : null}
-            {turnsQuery.isLoading ? (
-              <div className="inline-state" role="status"><span className="spinner" aria-hidden="true" /><span>Loading transcript turns...</span></div>
-            ) : null}
-            {turnsQuery.isError ? (
-              <div className="inline-error" role="alert">
-                <div><strong>Unable to load transcript turns</strong><p>{getErrorMessage(turnsQuery.error, 'An unexpected error occurred while loading speaker turns.')}</p></div>
-                <button type="button" onClick={() => turnsQuery.refetch()}>Try again</button>
-              </div>
-            ) : null}
-            {turnsQuery.isSuccess && turnsQuery.data.length === 0 ? (
-              <div className="inline-state empty-state"><span>No parsed transcript turns are available.</span></div>
-            ) : null}
-            {turnsQuery.isSuccess && turnsQuery.data.length > 0 ? (
-              <ol className="turn-list">
-                {turnsQuery.data.map((turn) => {
-                  const role: SpeakerRole = turn.inferred_role ?? 'unknown'
-                  return (
-                    <li id={`turn-${turn.id}`} className={`turn-item turn-item--${role}${selectedTurnId === turn.id ? ' turn-item--selected' : ''}`} key={turn.id}>
-                      <div className="turn-meta">
-                        <span className="turn-speaker">{turn.raw_speaker_label ?? 'Speaker not identified'}</span>
-                        <time>{turn.timestamp ?? 'No timestamp'}</time>
-                        <span className={`speaker-badge speaker-${role}`}>{speakerLabels[role]}</span>
-                      </div>
-                      <p>{turn.text}</p>
-                    </li>
-                  )
-                })}
-              </ol>
-            ) : null}
-          </div>
-        </div>
-
+        <TranscriptWorkspace
+          turns={turnsQuery.data ?? []}
+          selectedTurnId={selectedTurnId}
+          selectedQuote={selectedSignal?.advisor_quote}
+          loading={turnsQuery.isLoading}
+          errorMessage={turnsQuery.isError ? getErrorMessage(turnsQuery.error, 'An unexpected error occurred while loading speaker turns.') : null}
+          evidenceLocateFailed={evidenceLocateFailed}
+          onRetry={() => turnsQuery.refetch()}
+        />
       </section>
-
       {isProcessing ? (
         <div className="analysis-processing alert" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
@@ -613,7 +546,7 @@ export function TranscriptDetailPage() {
       {analysisAvailable ? (
         <section className="results-section section tab-panel" id="signals-panel" role="tabpanel" hidden={activeTab !== 'signals'} aria-labelledby="results-title">
           <div className="section-header results-heading">
-            <div><h3 id="results-title">Signals</h3><p>{totalSignals ? `${totalSignals} Final signals · Validated: ${validatedSignalCount} · Needs review: ${needsReviewSignalCount}` : 'No final signals identified'}</p></div>
+            <div><p className="eyebrow">AI analysis</p><h3 id="results-title">Business insights</h3><p>{totalSignals ? `${totalSignals} final signals` : 'No final signals identified'}</p></div>
           </div>
 
           {finalSignalsQuery.isLoading ? (
@@ -626,19 +559,71 @@ export function TranscriptDetailPage() {
             </div>
           ) : null}
           {finalSignalsQuery.isSuccess ? (
-            <div className="signal-sections">
-              <section className="signal-section signal-section--drivers" id="drivers" aria-labelledby="drivers-title">
-                <header><div><h4 id="drivers-title">Drivers</h4><p>Factors supporting retention or engagement.</p></div><span>{drivers.length}</span></header>
-                {drivers.length > 0 ? <div className="signal-list">{drivers.map((signal) => <SignalCard key={`${signal.item_type}-${signal.rank}`} signal={signal} onViewEvidence={viewEvidence} />)}</div> : <div className="results-empty">No final drivers found.</div>}
-              </section>
-              <section className="signal-section signal-section--blockers" id="blockers" aria-labelledby="blockers-title">
-                <header><div><h4 id="blockers-title">Blockers</h4><p>Concerns or obstacles that may affect the relationship.</p></div><span>{blockers.length}</span></header>
-                {blockers.length > 0 ? <div className="signal-list">{blockers.map((signal) => <SignalCard key={`${signal.item_type}-${signal.rank}`} signal={signal} onViewEvidence={viewEvidence} />)}</div> : <div className="results-empty">No final blockers found.</div>}
-              </section>
-            </div>
+            <SignalReviewWorkspace
+              drivers={drivers}
+              blockers={blockers}
+              selectedSignal={activeSignal}
+              selectedTurnId={activeTurnId}
+              turns={turnsQuery.data ?? []}
+              turnsLoading={turnsQuery.isLoading}
+              turnsError={turnsQuery.isError ? getErrorMessage(turnsQuery.error, 'An unexpected error occurred while loading speaker turns.') : null}
+              evidenceLocateFailed={evidenceLocateFailed}
+              onSelect={selectInsight}
+              onViewTranscript={viewEvidence}
+              onRetryTurns={() => turnsQuery.refetch()}
+            />
           ) : null}
         </section>
       ) : activeTab === 'signals' ? <div className="workspace-empty"><h3>Signals</h3><p>Run analysis to generate validated drivers and blockers.</p></div> : null}
+
+      <details className="analysis-details">
+        <summary><span id="analysis-details-title">Analysis details</span><small>History, processing, and diagnostics</small></summary>
+        <div className="analysis-details__content">
+        <button className="button button--secondary analysis-details__diagnostics" type="button" onClick={() => { setDiagnosticsOpened(true); setActiveTab('diagnostics') }}>Open diagnostics</button>
+        <details className="transcript-metadata"><summary>Transcript metadata</summary><dl className="analysis-header__metadata">
+            <div><dt>Updated</dt><dd>{formatDate(transcript.updated_at)}</dd></div>
+            <div><dt>Tokens</dt><dd>{numberFormatter.format(transcript.token_count)}</dd></div>
+            <div><dt>Speaker turns</dt><dd>{speakerTurnCount === null ? 'Loading...' : numberFormatter.format(speakerTurnCount)}</dd></div>
+          </dl>
+        </details>
+      {runsQuery.data?.length ? (
+        <details className="run-history-disclosure">
+          <summary><span>Analysis history</span><small>{runsQuery.data.length} analysis {runsQuery.data.length === 1 ? 'run' : 'runs'}</small></summary>
+          <div className="run-history__content">
+          <div className="section-header">
+            <div>
+              <h3 id="run-history-title">Analysis runs</h3>
+              <p>Full analysis calls extraction again. Replay validation reuses saved candidates and costs less.</p>
+            </div>
+          </div>
+          <div className="run-history__controls">
+            <label>
+              <span>Inspect run</span>
+              <select value={selectedRunId ?? ''} disabled={isProcessing} onChange={(event) => setSelectedRunId(event.target.value || null)}>
+                <option value="">Latest completed run</option>
+                {runsQuery.data.map((run) => (
+                  <option key={run.run_id} value={run.run_id}>
+                    {formatDate(run.started_at)} · {run.run_type} · {run.status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className="button button--secondary" type="button" disabled={isProcessing || !selectedRunId} onClick={() => selectedRunId && replayMutation.mutate(selectedRunId)}>
+              {replayMutation.isLoading ? 'Replaying…' : 'Replay validation'}
+            </button>
+          </div>
+          {selectedRunId ? <p className="run-history__selection">Selected run <code>{selectedRunId}</code></p> : <p className="run-history__selection">Latest run <code>{runsQuery.data[0].run_id}</code> · {runsQuery.data[0].run_type}</p>}
+          </div>
+        </details>
+      ) : null}
+
+      <PipelineStatus
+        status={progressStatus}
+        analysisComplete={analysisAvailable && !isProcessing}
+        failed={pipelineMutation.isError || transcriptFailed || runFailed}
+      />
+        </div>
+      </details>
 
       {csvDownload.isError || jsonlDownload.isError ? (
         <div className="export-error" role="alert">{getErrorMessage(csvDownload.error ?? jsonlDownload.error, 'The export could not be downloaded. Please try again.')}</div>

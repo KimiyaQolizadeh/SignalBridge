@@ -374,8 +374,10 @@ def test_ambiguous_short_quote_includes_neighboring_context(
     validate_evidence_for_transcript(transcript.id, db)
 
     supporting_turns = calls[0]["input_payload"]["supporting_turns"]
-    assert [turn["turn_id"] for turn in supporting_turns] == [short_turn.id]
-    assert supporting_turns[0]["text"] == short_turn.text
+    assert [turn["turn_id"] for turn in supporting_turns] == [
+        question.id + 1, short_turn.id, short_turn.id + 1
+    ]
+    assert supporting_turns[1]["text"] == short_turn.text
 
 
 def test_explicit_moving_forward_driver_can_pass(
@@ -760,7 +762,7 @@ def test_source_turn_resolves_repeated_quote_and_exact_timestamp(
 
     assert candidate.timestamp == second.timestamp
     supporting = calls[0]["input_payload"]["supporting_turns"]
-    assert [turn["turn_id"] for turn in supporting] == [second.id]
+    assert [turn["turn_id"] for turn in supporting] == [second.id - 1, second.id]
 
 
 def test_invalid_source_falls_back_to_unique_global_advisor_match(
@@ -921,3 +923,200 @@ def test_representative_match_is_ignored_when_unique_advisor_match_exists(
 
     assert candidate.timestamp == advisor.timestamp
     assert candidate.score.validator_verdict == "pass"
+
+def test_unsupported_external_handling_is_removed_before_validation(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    source = add_turn(
+        db, transcript, text="We avoid last-minute work on CE credits.", role="advisor"
+    )
+    candidate = add_candidate(
+        db,
+        transcript,
+        quote=source.text,
+        source_turn_ids=[source.id],
+        rationale="The advisor values having CE credits handled externally.",
+    )
+    seen: list[str] = []
+
+    def fake_call(**kwargs: object) -> EvidenceValidationOutput:
+        seen.append(kwargs["input_payload"]["candidate"]["rationale"])
+        return llm_output("needs_review")
+
+    monkeypatch.setattr(evidence_validator, "call_llm_json", fake_call)
+
+    validate_evidence_for_transcript(transcript.id, db)
+    db.refresh(candidate)
+
+    assert "external" not in candidate.rationale.lower()
+    assert "external" not in seen[0].lower()
+    assert candidate.advisor_quote == source.text
+
+
+def test_explicit_external_handling_remains_grounded(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    source = add_turn(
+        db,
+        transcript,
+        text="You guys handle all the CE credits for us. We avoid last-minute work.",
+        role="advisor",
+    )
+    quote = "We avoid last-minute work."
+    rationale = "The advisor values having CE credits handled externally."
+    candidate = add_candidate(
+        db, transcript, quote=quote, source_turn_ids=[source.id], rationale=rationale
+    )
+    monkeypatch.setattr(
+        evidence_validator, "call_llm_json", lambda **_: llm_output("needs_review")
+    )
+
+    validate_evidence_for_transcript(transcript.id, db)
+    db.refresh(candidate)
+
+    assert candidate.rationale == rationale
+    assert candidate.advisor_quote == quote
+
+def test_decision_authority_rationale_remains_grounded(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    source = add_turn(
+        db,
+        transcript,
+        text="The senior advisor determines those decisions.",
+        role="advisor",
+    )
+    rationale = (
+        "The advisor says the senior advisor determines those decisions, "
+        "which indicates a routing dependency for proceeding."
+    )
+    candidate = add_candidate(
+        db,
+        transcript,
+        quote=source.text,
+        source_turn_ids=[source.id],
+        item_type="blocker",
+        rationale=rationale,
+    )
+    monkeypatch.setattr(
+        evidence_validator, "call_llm_json", lambda **_: llm_output("needs_review")
+    )
+
+    validate_evidence_for_transcript(transcript.id, db)
+    db.refresh(candidate)
+
+    assert candidate.rationale == rationale
+    assert candidate.advisor_quote == source.text
+@pytest.mark.parametrize(
+    ("quote", "item_type", "effect", "direction", "expected"),
+    [
+        ("We're moving forward.", "driver", "increases_move_likelihood", "supports_driver", "reject"),
+        ("We're moving forward with Optimize.", "driver", "increases_move_likelihood", "supports_driver", "pass"),
+        ("Risk-adjusted returns are important.", "blocker", "neutral", "unsupported", "reject"),
+        ("I need to validate the risk-adjusted returns before I can proceed.", "blocker", "creates_timing_dependency", "supports_timing_blocker", "pass"),
+        ("The improved risk-adjusted returns would help my clients.", "driver", "increases_move_likelihood", "supports_driver", "pass"),
+        ("I can't send an email without compliance reviewing it.", "blocker", "neutral", "unsupported", "reject"),
+        ("I will not move unless the compliance oversight is equivalent.", "blocker", "decreases_move_likelihood", "supports_blocker", "pass"),
+        ("Everyone wants less administrative work.", "driver", "neutral", "unsupported", "reject"),
+        ("I need less administrative work so I can spend more time with clients.", "driver", "increases_move_likelihood", "supports_driver", "pass"),
+        ("He is moving a portion of his book.", "blocker", "indeterminate", "unsupported", "reject"),
+    ],
+)
+def test_business_signal_eligibility_examples(
+    quote: str, item_type: str, effect: str, direction: str, expected: str
+) -> None:
+    candidate = CandidateSignal(
+        item_type=item_type,
+        category="Business eligibility",
+        advisor_quote=quote,
+        rationale="The statement affects the advisor's decision.",
+        evidence_strength="explicit",
+        source_turn_ids=[1],
+    )
+    context_scope = "quote_only" if quote == "We're moving forward." else "local_advisor_thought"
+    output = structured_neutral_commitment_output(
+        context_scope=context_scope,
+        supported_decision_effect=effect,
+        direction_support=direction,
+    )
+
+    decision = evidence_validator.derive_validation_decision(output, candidate)
+
+    assert decision.verdict == expected
+@pytest.mark.parametrize(
+    ("original", "effect", "expected"),
+    [
+        ("blocker", "increases_move_likelihood", "driver"),
+        ("driver", "decreases_move_likelihood", "blocker"),
+    ],
+)
+def test_explicit_direction_contradiction_is_reclassified(
+    original: str, effect: str, expected: str
+) -> None:
+    candidate = CandidateSignal(
+        item_type=original,
+        category="Direction correction",
+        advisor_quote="This clearly affects my decision.",
+        rationale="The advisor states a clear decision effect.",
+        evidence_strength="explicit",
+        source_turn_ids=[1],
+    )
+    output = structured_neutral_commitment_output(
+        supported_decision_effect=effect,
+        direction_support="contradicts_candidate_type",
+    )
+
+    reclassified_from = evidence_validator.correct_candidate_direction(output, candidate)
+    decision = evidence_validator.derive_validation_decision(output, candidate)
+
+    assert reclassified_from == original
+    assert candidate.item_type == expected
+    assert decision.verdict == "pass"
+
+
+def test_mid_sentence_client_time_evidence_supplies_completion_metadata(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    previous = add_turn(
+        db,
+        transcript,
+        text=(
+            "I joined this business to be with clients, and I feel like so "
+            "much of my time is now just"
+        ),
+        role="advisor",
+        index=0,
+    )
+    source = add_turn(
+        db,
+        transcript,
+        text=(
+            "not with clients, and it drains my energy, so I feel like I'm "
+            "gonna get all the energy back and give clients more."
+        ),
+        role="advisor",
+        index=1,
+    )
+    previous.raw_speaker_label = source.raw_speaker_label = "Advisor"
+    candidate = add_candidate(
+        db,
+        transcript,
+        quote=source.text,
+        source_turn_ids=[source.id],
+        rationale=(
+            "Non-client work takes time and energy away from clients, and "
+            "more client-facing time is a meaningful benefit."
+        ),
+    )
+    calls: list[dict] = []
+
+    def fake_call(**kwargs: object) -> EvidenceValidationOutput:
+        calls.append(kwargs)
+        return llm_output("pass")
+
+    monkeypatch.setattr(evidence_validator, "call_llm_json", fake_call)
+    validate_evidence_for_transcript(transcript.id, db)

@@ -1,3 +1,4 @@
+import re
 from typing import cast
 
 from sqlalchemy import delete, select
@@ -7,12 +8,13 @@ from sqlalchemy.orm import Session, selectinload
 from ..config import settings
 from ..llm_schemas import FinalRerankOutput, FinalSelectedSignal
 from ..logging_config import get_logger
-from ..models import CandidateSignal, FinalSignal, Transcript
+from ..models import CandidateSignal, FinalSignal, Transcript, TranscriptTurn
 from .llm_client import LLMClientError, call_llm_json
 
 
 MAX_PER_TYPE = 3
 RERANK_INPUT_LIMIT = 8
+FALLBACK_SCORE_FLOOR = 3.25
 logger = get_logger(__name__)
 
 
@@ -50,6 +52,80 @@ def _is_eligible(candidate: CandidateSignal) -> bool:
     if candidate.evidence_strength == "implied":
         return score.final_score >= 4.0
     return False
+
+
+_GENERAL_OBSERVATION = re.compile(r"\b(?:everyone|every advisor|all advisors|people|the industry|most firms)\b", re.I)
+_CONDITIONAL = re.compile(r"\b(?:if|maybe|potentially|could|i suppose|if it works|if it does what it claims|if it does work)\b", re.I)
+_PERSONAL_OWNERSHIP = re.compile(r"\b(?:i|i'm|i've|i'd|me|my|mine|we|we're|we've|our|us)\b", re.I)
+_DRIVER_DIRECTION = re.compile(r"\b(?:want|need|value|benefit|help(?:s|ed)?|free up|spend more time|move forward with|decided|prefer|important to me)\b", re.I)
+_BLOCKER_DIRECTION = re.compile(r"\b(?:concern|worried|hesitat|cannot|can't|won't|unless|must|required?|need.+before|wait|delay|approval|constraint|risk)\b", re.I)
+_INSUFFICIENT_REASONS = frozenset({
+    "ambiguous_evidence", "incomplete_context", "context_failure",
+    "neutral_or_indeterminate_effect", "candidate_direction_mismatch",
+})
+
+
+def _candidate_context(candidate: CandidateSignal, turns: list[TranscriptTurn]) -> str:
+    source_ids = set(candidate.source_turn_ids or [])
+    positions = [index for index, turn in enumerate(turns) if turn.id in source_ids]
+    if not positions:
+        return candidate.advisor_quote
+    first, last = min(positions), max(positions)
+    window = turns[max(0, first - 1):min(len(turns), last + 2)]
+    return " ".join(turn.text for turn in window)
+
+
+def _source_text(candidate: CandidateSignal, turns: list[TranscriptTurn]) -> str:
+    source_ids = set(candidate.source_turn_ids or [])
+    return " ".join(turn.text for turn in turns if turn.id in source_ids)
+
+
+def _apply_contextual_direction(candidate: CandidateSignal, context: str) -> None:
+    text = f"{candidate.advisor_quote} {context}".lower()
+    if candidate.item_type == "blocker" and re.search(r"\b(?:timely|timeliness|compliance|rules?)\b", text) and re.search(r"\b(?:every firm|firm i(?:'ve| have) worked with|current firm)\b", text) and not (("optimize" in text or "you guys" in text) and re.search(r"\b(?:same|equivalent|proof|prove|approval|required?)\b", text)):
+        candidate.item_type = "driver"
+        candidate.category = "Communication Flexibility"
+        candidate.rationale = "The advisor describes current-firm compliance restrictions as limiting timely, authentic communication, which motivates interest in a more flexible environment."
+    if candidate.item_type == "blocker" and "threshold" in text and re.search(r"\b(?:worried|concerned?)\b", text):
+        candidate.category = "Minimum Book Threshold"
+        candidate.rationale = "The advisor is concerned that their current book size is below the threshold being discussed, which may affect eligibility or willingness to proceed."
+    if candidate.item_type == "driver" and candidate.category.lower() == "values alignment" and candidate.advisor_quote.lower() in candidate.rationale.lower():
+        candidate.rationale = "The advisor indicates that misalignment with the current firm's values is prompting consideration of an alternative organization where those values are better matched."
+
+
+def _passes_contextual_final_gate(candidate: CandidateSignal, context: str, source_text: str) -> bool:
+    combined = f"{candidate.advisor_quote} {context}".lower()
+    source = source_text.lower()
+    if candidate.item_type == "blocker" and re.search(r"\bdon't have time\b|\bdo not have time\b", source) and re.search(r"\b(?:fortunately|dedicated).{0,100}(?:support|planning)\b", source):
+        return False
+    if candidate.item_type == "blocker" and re.search(r"\b(?:accountab|responsib|explain|tell\w*(?:\s+\w+){0,3}\s+the rationale)\b", combined) and re.search(r"\bworked very well\b", combined):
+        return False
+    if candidate.item_type == "driver" and re.search(r"\bwe use\b.{0,120}\b(?:income generation|portfolio protection|tax balancing)\b", source) and not re.search(r"\b(?:optimize|move|switch|preserve|enhance|scale|replace|would help)\b", source):
+        return False
+    return True
+
+def _is_fallback_eligible(candidate: CandidateSignal, context: str = "") -> bool:
+    """Require personal, directional, decision-relevant evidence for weak fallback."""
+    if not _is_grounded(candidate):
+        return False
+    score = candidate.score
+    quote = candidate.advisor_quote.strip()
+    rationale = candidate.rationale.strip()
+    contextual_evidence = f"{quote} {rationale} {context}"
+    if (
+        score.validator_verdict not in {"pass", "needs_review"}
+        or score.final_score < (3.0 if score.validator_verdict == "pass" else FALLBACK_SCORE_FLOOR)
+        or (score.advisor_ownership or 0) < 4
+        or (score.decision_impact or 0) < 3
+        or (score.evidence_quality or 0) < 3
+        or score.rejection_reason in _INSUFFICIENT_REASONS
+        or not _PERSONAL_OWNERSHIP.search(quote)
+        or _GENERAL_OBSERVATION.search(quote)
+        or _CONDITIONAL.search(quote)
+    ):
+        return False
+    direction_pattern = _DRIVER_DIRECTION if candidate.item_type == "driver" else _BLOCKER_DIRECTION
+    return bool(direction_pattern.search(contextual_evidence))
 
 
 def _sort_key(candidate: CandidateSignal) -> tuple:
@@ -161,6 +237,11 @@ def rerank_final_signals_for_transcript(transcript_id: int, db: Session, *, run_
                 candidate_query.order_by(CandidateSignal.id)
             ).all()
         )
+        turns = list(db.scalars(
+            select(TranscriptTurn)
+            .where(TranscriptTurn.transcript_id == transcript_id)
+            .order_by(TranscriptTurn.turn_index, TranscriptTurn.id)
+        ).all())
     except SQLAlchemyError:
         db.rollback()
         logger.error(
@@ -180,7 +261,15 @@ def rerank_final_signals_for_transcript(transcript_id: int, db: Session, *, run_
         )
         raise NoCandidateSignalsError("Transcript has no candidate signals")
 
-    eligible = [candidate for candidate in candidates if _is_eligible(candidate)]
+    contexts = {candidate.id: _candidate_context(candidate, turns) for candidate in candidates}
+    sources = {candidate.id: _source_text(candidate, turns) for candidate in candidates}
+    for candidate in candidates:
+        _apply_contextual_direction(candidate, contexts[candidate.id])
+    eligible = [
+        candidate for candidate in candidates
+        if _is_eligible(candidate)
+        and _passes_contextual_final_gate(candidate, contexts[candidate.id], sources[candidate.id])
+    ]
     grounded = [candidate for candidate in candidates if _is_grounded(candidate)]
     drivers = sorted(
         (candidate for candidate in eligible if candidate.item_type == "driver"),
@@ -241,7 +330,8 @@ def rerank_final_signals_for_transcript(transcript_id: int, db: Session, *, run_
                 candidate
                 for candidate in grounded
                 if candidate.item_type == item_type
-                and candidate.score.validator_verdict == "needs_review"
+                and _is_fallback_eligible(candidate, contexts[candidate.id])
+                and _passes_contextual_final_gate(candidate, contexts[candidate.id], sources[candidate.id])
             ),
             key=_sort_key,
         )

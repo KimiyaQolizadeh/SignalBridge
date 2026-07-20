@@ -12,6 +12,11 @@ from ..config import settings
 from ..llm_schemas import EvidenceValidationOutput
 from ..logging_config import get_logger
 from ..models import CandidateSignal, SignalScore, Transcript, TranscriptTurn
+from .evidence_context import (
+    adjacent_advisor_completion_turns,
+    context_turns,
+    ground_rationale,
+)
 from .llm_client import LLMClientError, call_llm_json
 from .prompt_loader import load_prompt
 from .run_persistence import persist_validation_diagnostics
@@ -159,22 +164,12 @@ def _resolve_evidence_turn(
 
 
 def _supporting_turns(
-    resolved: ResolvedEvidenceTurn, turns: list[TranscriptTurn]
+    resolved: ResolvedEvidenceTurn,
+    turns: list[TranscriptTurn],
+    candidate: CandidateSignal,
 ) -> list[TranscriptTurn]:
-    """Build one bounded contiguous advisor thought; never cross ownership."""
-    index_by_id = {turn.id: index for index, turn in enumerate(turns)}
-    source_index = index_by_id[resolved.turn.id]
-    selected = {source_index}
-    for direction in (-1, 1):
-        for distance in range(1, MAX_CONTEXT_TURNS_PER_SIDE + 1):
-            index = source_index + direction * distance
-            if not 0 <= index < len(turns):
-                break
-            if not _is_reliably_advisor_owned(turns[index]):
-                break
-            selected.add(index)
-    return [turns[index] for index in sorted(selected)]
-
+    """Use the bounded transcript-order context supplied to presentation."""
+    return context_turns(candidate, turns, include_source=True)
 
 def _turn_payload(turn: TranscriptTurn) -> dict:
     return {
@@ -430,6 +425,30 @@ def is_reviewable_directional_factor(
     )
 
 
+def correct_candidate_direction(
+    output: EvidenceValidationOutput, candidate: CandidateSignal
+) -> str | None:
+    """Correct only an explicit structured direction contradiction."""
+    findings = _findings(output, candidate)
+    if findings.get("direction_support") != "contradicts_candidate_type":
+        return None
+    effect = findings.get("supported_decision_effect")
+    original = candidate.item_type
+    if original == "blocker" and effect == "increases_move_likelihood":
+        candidate.item_type = "driver"
+        output.direction_support = "supports_driver"
+        return original
+    if original == "driver" and effect in {"decreases_move_likelihood", "creates_timing_dependency"}:
+        candidate.item_type = "blocker"
+        output.direction_support = (
+            "supports_timing_blocker"
+            if effect == "creates_timing_dependency"
+            else "supports_blocker"
+        )
+        return original
+    return None
+
+
 def derive_validation_decision(
     output: EvidenceValidationOutput, candidate: CandidateSignal
 ) -> ValidationDecision:
@@ -438,12 +457,18 @@ def derive_validation_decision(
     issues = _consistency_issues(findings, candidate)
     explicit_commitment = is_explicit_advisor_commitment(candidate, findings)
     reviewable_factor = is_reviewable_directional_factor(candidate, findings)
+    vague_commitment = (
+        candidate.item_type == "driver"
+        and bool(re.fullmatch(r"(?:i(?:'m| am)|we(?:'re| are)) moving forward[.!]?", _normalized_quote(candidate.advisor_quote)))
+        and findings.get("context_scope") == "quote_only"
+    )
     hard: list[str] = []
     checks = {
         "quote_absent": findings.get("quote_traceability") == "absent",
         "source_turn_missing": findings.get("source_turn_match") == "missing",
         "ownership_failure": findings.get("advisor_ownership") in {"mixed", "representative", "unknown", "conflicting"},
         "context_failure": findings.get("context_sufficiency") in {"contradictory", "irrelevant"},
+        "insufficient_commitment_context": vague_commitment,
         "decision_relevance_none": findings.get("decision_relevance") == "none",
         "neutral_or_indeterminate_effect": (
             findings.get("supported_decision_effect") in {"neutral", "indeterminate"}
@@ -613,7 +638,9 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
             diagnostics.append({"candidate_id": candidate.id, "derived_verdict": "reject", "hard_failure_reason": relevance_rejection, "context_turn_ids": [resolved.turn.id]})
             continue
 
-        supporting_turns = _supporting_turns(resolved, turns)
+        supporting_turns = _supporting_turns(resolved, turns, candidate)
+        completion_turns = adjacent_advisor_completion_turns(candidate, turns)
+        rationale_was_grounded = ground_rationale(candidate, supporting_turns)
         candidate.timestamp = resolved.turn.timestamp
         response_metadata: dict = {}
         try:
@@ -643,6 +670,11 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
                             "ownership_turn_id": resolved.turn.id,
                             "resolution_method": resolved.resolution_method,
                             "context_turn_ids": [turn.id for turn in supporting_turns],
+                            "adjacent_advisor_completion_turn_ids": [
+                                turn.id for turn in completion_turns
+                            ],
+                            "primary_quote_is_sentence_continuation": bool(completion_turns),
+                            "rationale_was_grounded": rationale_was_grounded,
                             "standalone_question": candidate.advisor_quote.rstrip().endswith("?"),
                             "procedural_only": _is_purely_procedural_statement(candidate.advisor_quote),
                         },
@@ -660,6 +692,7 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
                 "candidate_id": candidate.id, "derived_verdict": "reject",
                 "hard_failure_reason": "malformed_or_unavailable_model_output",
                 "context_turn_ids": [turn.id for turn in supporting_turns],
+                            "rationale_was_grounded": rationale_was_grounded,
                 "model": settings.evidence_validator_model,
                 "prompt_version": "validation_2.0", "prompt_hash": prompt_hash,
                 "fallback_usage": True, "malformed_model_output": True,
@@ -676,6 +709,7 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
                 "Evidence validation service is unavailable"
             ) from None
 
+        reclassified_from = correct_candidate_direction(output, candidate)
         decision = derive_validation_decision(output, candidate)
         support, ownership, risk = _compatible_scores(output, decision)
         score = _get_or_create_score(candidate)
@@ -687,6 +721,7 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
         findings = _findings(output, candidate)
         diagnostics.append({
             "candidate_id": candidate.id,
+            "reclassified_from": reclassified_from,
             "deterministic_prechecks": {
                 "quote_traceability": "exact", "source_turn_match": "exact",
                 "advisor_ownership": "reliable_advisor",
@@ -700,6 +735,7 @@ def validate_evidence_for_transcript(transcript_id: int, db: Session, *, run_id:
             "contradiction_status": findings.get("contradiction_status"),
             "consistency_issues": list(decision.consistency_issues),
             "context_turn_ids": [turn.id for turn in supporting_turns],
+                            "rationale_was_grounded": rationale_was_grounded,
             "model": settings.evidence_validator_model,
             "prompt_version": "validation_2.0",
             "prompt_hash": prompt_hash,

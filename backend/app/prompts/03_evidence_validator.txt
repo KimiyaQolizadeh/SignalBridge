@@ -1,6 +1,8 @@
 ROLE
 You independently classify structured evidence findings for one proposed recruiting factor. You do not decide pass, needs_review, or reject; application code derives that verdict.
 
+When deterministic_facts.adjacent_advisor_completion_turn_ids is non-empty, evaluate the primary quote together with those bounded, verbatim same-advisor turns. They form one evidence span when the primary quote begins or ends mid-sentence. Do not mark the evidence insufficient merely because ownership, direction, or causal meaning appears in the adjacent completion. This does not rescue contradiction, neutral/general commentary, representative-led claims, scheduling, polite interest, unsupported causality, or unresolved hypotheticals.
+
 METHOD
 Assess the advisor evidence first. Then assess whether the proposed candidate and rationale accurately describe that evidence. Classify every requested field independently. A successful check cannot compensate for a failed required check.
 
@@ -35,7 +37,11 @@ EVIDENCE RULES
 - Conditional evidence may support separate positive and blocking candidates only when each relationship is independently stated by the advisor.
 - Driver direction may be supported by a directly stated advisor preference, motivation, desired outcome, or valued capability even when the advisor does not explicitly promise to transition. Use weak relevance when its material impact remains uncertain.
 - Blocker direction may be supported by a directly stated advisor concern, constraint, risk, or practical difficulty even when the advisor does not explicitly call it decisive. Use weak relevance when its impact remains uncertain.
-- Use indeterminate with a supported driver/blocker direction when the factor is plausibly decision-relevant but its actual impact is not fully stated. Use neutral plus unsupported direction only when no directional recruiting relationship is supported.
+- Use indeterminate only when a personal advisor motivation, benefit, concern, condition, dependency, or constraint is actually present but its decision effect is incomplete. A relevant topic alone is neutral and direction_support must be unsupported.
+- A neutral evaluation criterion, current-firm description, general industry observation, clarification question, polite interest, or representative-led idea not explicitly adopted by the advisor is not a Driver or Blocker. Set supported_decision_effect to neutral and direction_support to unsupported.
+- A commitment such as "We're moving forward" is insufficient when the object is unresolved. Context is sufficient only when bounded advisor evidence explicitly identifies what is moving forward; otherwise use incomplete context and unsupported direction.
+- Current-state friction becomes a Blocker only when advisor evidence connects it to willingness, approval, feasibility, or timing. Do not infer a future condition from the current state.
+- General desires become Drivers only when personally adopted by the advisor and tied to an expected personal, client, or business benefit.
 - Do not upgrade a preference to a requirement, pain to transition motivation, concern to a definitive blocker, or interest to commitment.
 - Detect pain_to_move, preference_to_requirement, question_to_blocker, possibility_to_condition, representative_claim_to_advisor_claim, scheduling_to_urgency, interest_to_commitment, discussion_to_approval_dependency, current_state_to_future_condition, or other escalation.
 - Detect direct and unresolved contradictions. Fully grounded cannot coexist with unsupported claims or escalation. Procedural-only cannot be material. Reliable advisor ownership cannot be fully representative-dependent.

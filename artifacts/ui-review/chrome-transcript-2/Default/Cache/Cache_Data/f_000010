@@ -1,0 +1,250 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/TranscriptWorkspace.tsx");import RefreshRuntime from "/@react-refresh";
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("@vitejs/plugin-react can't detect preamble. Something is wrong. See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201");
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    RefreshRuntime.register(type, "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/TranscriptWorkspace.tsx " + id);
+  };
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _jsxFileName = "D:\\WorkSpace\\Optimize_Finance\\signalbridge\\frontend\\src\\components\\TranscriptWorkspace.tsx";
+import { EvidenceText } from "/src/components/EvidenceText.tsx";
+import __vite__cjsImport3_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=165d986c"; const _jsxDEV = __vite__cjsImport3_react_jsxDevRuntime["jsxDEV"];
+const speakerLabels = {
+  advisor: "Advisor",
+  optimize_rep: "Optimize representative",
+  mixed: "Mixed",
+  unknown: "Unknown"
+};
+export function TranscriptWorkspace({
+  turns,
+  selectedTurnId,
+  selectedQuote,
+  loading,
+  errorMessage,
+  evidenceLocateFailed = false,
+  onRetry,
+  compact = false,
+  idPrefix = "turn"
+}) {
+  return /* @__PURE__ */ _jsxDEV("section", {
+    className: `transcript-workspace${compact ? " transcript-workspace--compact" : ""}`,
+    "aria-label": "Transcript evidence",
+    children: [evidenceLocateFailed ? /* @__PURE__ */ _jsxDEV("p", {
+      className: "transcript-workspace__notice",
+      children: "Evidence turn could not be located."
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 36,
+      columnNumber: 31
+    }, this) : null, loading ? /* @__PURE__ */ _jsxDEV("div", {
+      className: "inline-state",
+      role: "status",
+      children: [/* @__PURE__ */ _jsxDEV("span", {
+        className: "spinner",
+        "aria-hidden": "true"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 37,
+        columnNumber: 62
+      }, this), /* @__PURE__ */ _jsxDEV("span", {
+        children: "Loading transcript turns..."
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 37,
+        columnNumber: 109
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 37,
+      columnNumber: 18
+    }, this) : null, errorMessage ? /* @__PURE__ */ _jsxDEV("div", {
+      className: "inline-error",
+      role: "alert",
+      children: [/* @__PURE__ */ _jsxDEV("div", {
+        children: [/* @__PURE__ */ _jsxDEV("strong", {
+          children: "Unable to load transcript turns"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 40,
+          columnNumber: 16
+        }, this), /* @__PURE__ */ _jsxDEV("p", {
+          children: errorMessage
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 40,
+          columnNumber: 64
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 40,
+        columnNumber: 11
+      }, this), onRetry ? /* @__PURE__ */ _jsxDEV("button", {
+        type: "button",
+        onClick: onRetry,
+        children: "Try again"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 41,
+        columnNumber: 22
+      }, this) : null]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 39,
+      columnNumber: 9
+    }, this) : null, !loading && !errorMessage && turns.length === 0 ? /* @__PURE__ */ _jsxDEV("div", {
+      className: "inline-state empty-state",
+      children: /* @__PURE__ */ _jsxDEV("span", {
+        children: "No parsed transcript turns are available."
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 44,
+        columnNumber: 100
+      }, this)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 44,
+      columnNumber: 58
+    }, this) : null, turns.length > 0 ? /* @__PURE__ */ _jsxDEV("ol", {
+      className: "turn-list",
+      children: turns.map((turn) => {
+        const role = turn.inferred_role ?? "unknown";
+        const selected = selectedTurnId === turn.id;
+        return /* @__PURE__ */ _jsxDEV("li", {
+          id: `${idPrefix}-${turn.id}`,
+          className: `turn-item turn-item--${role}${selected ? " turn-item--selected" : ""}`,
+          children: [/* @__PURE__ */ _jsxDEV("div", {
+            className: "turn-meta",
+            children: [/* @__PURE__ */ _jsxDEV("span", {
+              className: "turn-speaker",
+              children: turn.raw_speaker_label ?? "Speaker not identified"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 53,
+              columnNumber: 19
+            }, this), /* @__PURE__ */ _jsxDEV("time", {
+              children: turn.timestamp ?? "No timestamp"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 54,
+              columnNumber: 19
+            }, this), /* @__PURE__ */ _jsxDEV("span", {
+              className: `speaker-badge speaker-${role}`,
+              children: speakerLabels[role]
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 55,
+              columnNumber: 19
+            }, this), selected ? /* @__PURE__ */ _jsxDEV("span", {
+              className: "source-turn-label",
+              children: "Source evidence"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 56,
+              columnNumber: 31
+            }, this) : null]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 52,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("p", {
+            children: /* @__PURE__ */ _jsxDEV(EvidenceText, {
+              text: turn.text,
+              quote: selected ? selectedQuote : null
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 58,
+              columnNumber: 20
+            }, this)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 58,
+            columnNumber: 17
+          }, this)]
+        }, turn.id, true, {
+          fileName: _jsxFileName,
+          lineNumber: 51,
+          columnNumber: 15
+        }, this);
+      })
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 46,
+      columnNumber: 9
+    }, this) : null]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 35,
+    columnNumber: 5
+  }, this);
+}
+_c = TranscriptWorkspace;
+var _c;
+$RefreshReg$(_c, "TranscriptWorkspace");
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+  import.meta.hot.accept();
+  if (!window.__vite_plugin_react_timeout) {
+    window.__vite_plugin_react_timeout = setTimeout(() => {
+      window.__vite_plugin_react_timeout = 0;
+      RefreshRuntime.performReactRefresh();
+    }, 30);
+  }
+}
+
+/*{
+  "version": 3,
+  "mappings": "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",
+  "names": [
+    "EvidenceText",
+    "speakerLabels",
+    "advisor",
+    "optimize_rep",
+    "mixed",
+    "unknown",
+    "TranscriptWorkspace",
+    "turns",
+    "selectedTurnId",
+    "selectedQuote",
+    "loading",
+    "errorMessage",
+    "evidenceLocateFailed",
+    "onRetry",
+    "compact",
+    "idPrefix",
+    "_jsxDEV",
+    "className",
+    "children",
+    "_jsxFileName",
+    "role",
+    "type",
+    "onClick",
+    "length",
+    "map",
+    "turn",
+    "inferred_role",
+    "selected",
+    "id",
+    "raw_speaker_label",
+    "timestamp",
+    "text",
+    "quote",
+    "_c",
+    "$RefreshReg$"
+  ],
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/TranscriptWorkspace.tsx"
+  ],
+  "file": "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/TranscriptWorkspace.tsx",
+  "sourcesContent": [
+    "import type { SpeakerRole, TranscriptTurn } from '../types/transcript'\nimport { EvidenceText } from './EvidenceText'\n\nconst speakerLabels: Record<SpeakerRole, string> = {\n  advisor: 'Advisor',\n  optimize_rep: 'Optimize representative',\n  mixed: 'Mixed',\n  unknown: 'Unknown',\n}\n\ninterface TranscriptWorkspaceProps {\n  turns: TranscriptTurn[]\n  selectedTurnId: number | null\n  selectedQuote?: string | null\n  loading: boolean\n  errorMessage?: string | null\n  evidenceLocateFailed?: boolean\n  onRetry?: () => void\n  compact?: boolean\r\n  idPrefix?: string\n}\n\nexport function TranscriptWorkspace({\n  turns,\n  selectedTurnId,\n  selectedQuote,\n  loading,\n  errorMessage,\n  evidenceLocateFailed = false,\n  onRetry,\n  compact = false,\r\n  idPrefix = 'turn',\r\n}: TranscriptWorkspaceProps) {\n  return (\n    <section className={`transcript-workspace${compact ? ' transcript-workspace--compact' : ''}`} aria-label=\"Transcript evidence\">\n      {evidenceLocateFailed ? <p className=\"transcript-workspace__notice\">Evidence turn could not be located.</p> : null}\n      {loading ? <div className=\"inline-state\" role=\"status\"><span className=\"spinner\" aria-hidden=\"true\" /><span>Loading transcript turns...</span></div> : null}\n      {errorMessage ? (\n        <div className=\"inline-error\" role=\"alert\">\n          <div><strong>Unable to load transcript turns</strong><p>{errorMessage}</p></div>\n          {onRetry ? <button type=\"button\" onClick={onRetry}>Try again</button> : null}\n        </div>\n      ) : null}\n      {!loading && !errorMessage && turns.length === 0 ? <div className=\"inline-state empty-state\"><span>No parsed transcript turns are available.</span></div> : null}\n      {turns.length > 0 ? (\n        <ol className=\"turn-list\">\n          {turns.map((turn) => {\n            const role: SpeakerRole = turn.inferred_role ?? 'unknown'\n            const selected = selectedTurnId === turn.id\n            return (\n              <li id={`${idPrefix}-${turn.id}`} className={`turn-item turn-item--${role}${selected ? ' turn-item--selected' : ''}`} key={turn.id}>\n                <div className=\"turn-meta\">\n                  <span className=\"turn-speaker\">{turn.raw_speaker_label ?? 'Speaker not identified'}</span>\n                  <time>{turn.timestamp ?? 'No timestamp'}</time>\n                  <span className={`speaker-badge speaker-${role}`}>{speakerLabels[role]}</span>\n                  {selected ? <span className=\"source-turn-label\">Source evidence</span> : null}\n                </div>\n                <p><EvidenceText text={turn.text} quote={selected ? selectedQuote : null} /></p>\n              </li>\n            )\n          })}\n        </ol>\n      ) : null}\n    </section>\n  )\n}\n"
+  ]
+}*/
+
+//# sourceMappingURL=data:application/json;base64,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QztBQUFBLFlBQWU7QUFBQTtBQUFBQztBQUFBO0FBQUEsbUJBQU0sSUFBSSxJQUFJO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsaUJBQzFFLEdBQ0xIO0FBQUEsc0JBQUdBLHdCQUFDaEIsY0FBWTtBQUFBLGNBQUMrQixNQUFNTixLQUFLTTtBQUFBQSxjQUFNQyxPQUFPTCxXQUFXbEIsZ0JBQWdCO0FBQUEsWUFBSztBQUFBO0FBQUFVO0FBQUE7QUFBQSxtQkFBRTtBQUFBLFVBQUM7QUFBQTtBQUFBQTtBQUFBO0FBQUEsaUJBQUcsQ0FBQztBQUFBLFdBUHlDTSxLQUFLRyxJQUFFO0FBQUE7QUFBQVQ7QUFBQTtBQUFBLGVBUTlIO0FBQUEsTUFFUixDQUFDO0FBQUEsSUFBQztBQUFBO0FBQUFBO0FBQUE7QUFBQSxXQUNBLElBQ0YsSUFBSTtBQUFBO0FBQUE7QUFBQUE7QUFBQTtBQUFBLFNBQ0Q7QUFFYjtBQUFDYyxLQTNDZTNCO0FBQW1CO0FBQUE0QiIsIm5hbWVzIjpbIkV2aWRlbmNlVGV4dCIsInNwZWFrZXJMYWJlbHMiLCJhZHZpc29yIiwib3B0aW1pemVfcmVwIiwibWl4ZWQiLCJ1bmtub3duIiwiVHJhbnNjcmlwdFdvcmtzcGFjZSIsInR1cm5zIiwic2VsZWN0ZWRUdXJuSWQiLCJzZWxlY3RlZFF1b3RlIiwibG9hZGluZyIsImVycm9yTWVzc2FnZSIsImV2aWRlbmNlTG9jYXRlRmFpbGVkIiwib25SZXRyeSIsImNvbXBhY3QiLCJpZFByZWZpeCIsIl9qc3hERVYiLCJjbGFzc05hbWUiLCJjaGlsZHJlbiIsIl9qc3hGaWxlTmFtZSIsInJvbGUiLCJ0eXBlIiwib25DbGljayIsImxlbmd0aCIsIm1hcCIsInR1cm4iLCJpbmZlcnJlZF9yb2xlIiwic2VsZWN0ZWQiLCJpZCIsInJhd19zcGVha2VyX2xhYmVsIiwidGltZXN0YW1wIiwidGV4dCIsInF1b3RlIiwiX2MiLCIkUmVmcmVzaFJlZyQiXSwic291cmNlcyI6WyJEOi9Xb3JrU3BhY2UvT3B0aW1pemVfRmluYW5jZS9zaWduYWxicmlkZ2UvZnJvbnRlbmQvc3JjL2NvbXBvbmVudHMvVHJhbnNjcmlwdFdvcmtzcGFjZS50c3giXSwiZmlsZSI6IkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9UcmFuc2NyaXB0V29ya3NwYWNlLnRzeCIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB0eXBlIHsgU3BlYWtlclJvbGUsIFRyYW5zY3JpcHRUdXJuIH0gZnJvbSAnLi4vdHlwZXMvdHJhbnNjcmlwdCdcbmltcG9ydCB7IEV2aWRlbmNlVGV4dCB9IGZyb20gJy4vRXZpZGVuY2VUZXh0J1xuXG5jb25zdCBzcGVha2VyTGFiZWxzOiBSZWNvcmQ8U3BlYWtlclJvbGUsIHN0cmluZz4gPSB7XG4gIGFkdmlzb3I6ICdBZHZpc29yJyxcbiAgb3B0aW1pemVfcmVwOiAnT3B0aW1pemUgcmVwcmVzZW50YXRpdmUnLFxuICBtaXhlZDogJ01peGVkJyxcbiAgdW5rbm93bjogJ1Vua25vd24nLFxufVxuXG5pbnRlcmZhY2UgVHJhbnNjcmlwdFdvcmtzcGFjZVByb3BzIHtcbiAgdHVybnM6IFRyYW5zY3JpcHRUdXJuW11cbiAgc2VsZWN0ZWRUdXJuSWQ6IG51bWJlciB8IG51bGxcbiAgc2VsZWN0ZWRRdW90ZT86IHN0cmluZyB8IG51bGxcbiAgbG9hZGluZzogYm9vbGVhblxuICBlcnJvck1lc3NhZ2U/OiBzdHJpbmcgfCBudWxsXG4gIGV2aWRlbmNlTG9jYXRlRmFpbGVkPzogYm9vbGVhblxuICBvblJldHJ5PzogKCkgPT4gdm9pZFxuICBjb21wYWN0PzogYm9vbGVhblxyXG4gIGlkUHJlZml4Pzogc3RyaW5nXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBUcmFuc2NyaXB0V29ya3NwYWNlKHtcbiAgdHVybnMsXG4gIHNlbGVjdGVkVHVybklkLFxuICBzZWxlY3RlZFF1b3RlLFxuICBsb2FkaW5nLFxuICBlcnJvck1lc3NhZ2UsXG4gIGV2aWRlbmNlTG9jYXRlRmFpbGVkID0gZmFsc2UsXG4gIG9uUmV0cnksXG4gIGNvbXBhY3QgPSBmYWxzZSxcclxuICBpZFByZWZpeCA9ICd0dXJuJyxcclxufTogVHJhbnNjcmlwdFdvcmtzcGFjZVByb3BzKSB7XG4gIHJldHVybiAoXG4gICAgPHNlY3Rpb24gY2xhc3NOYW1lPXtgdHJhbnNjcmlwdC13b3Jrc3BhY2Uke2NvbXBhY3QgPyAnIHRyYW5zY3JpcHQtd29ya3NwYWNlLS1jb21wYWN0JyA6ICcnfWB9IGFyaWEtbGFiZWw9XCJUcmFuc2NyaXB0IGV2aWRlbmNlXCI+XG4gICAgICB7ZXZpZGVuY2VMb2NhdGVGYWlsZWQgPyA8cCBjbGFzc05hbWU9XCJ0cmFuc2NyaXB0LXdvcmtzcGFjZV9fbm90aWNlXCI+RXZpZGVuY2UgdHVybiBjb3VsZCBub3QgYmUgbG9jYXRlZC48L3A+IDogbnVsbH1cbiAgICAgIHtsb2FkaW5nID8gPGRpdiBjbGFzc05hbWU9XCJpbmxpbmUtc3RhdGVcIiByb2xlPVwic3RhdHVzXCI+PHNwYW4gY2xhc3NOYW1lPVwic3Bpbm5lclwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiIC8+PHNwYW4+TG9hZGluZyB0cmFuc2NyaXB0IHR1cm5zLi4uPC9zcGFuPjwvZGl2PiA6IG51bGx9XG4gICAgICB7ZXJyb3JNZXNzYWdlID8gKFxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImlubGluZS1lcnJvclwiIHJvbGU9XCJhbGVydFwiPlxuICAgICAgICAgIDxkaXY+PHN0cm9uZz5VbmFibGUgdG8gbG9hZCB0cmFuc2NyaXB0IHR1cm5zPC9zdHJvbmc+PHA+e2Vycm9yTWVzc2FnZX08L3A+PC9kaXY+XG4gICAgICAgICAge29uUmV0cnkgPyA8YnV0dG9uIHR5cGU9XCJidXR0b25cIiBvbkNsaWNrPXtvblJldHJ5fT5UcnkgYWdhaW48L2J1dHRvbj4gOiBudWxsfVxuICAgICAgICA8L2Rpdj5cbiAgICAgICkgOiBudWxsfVxuICAgICAgeyFsb2FkaW5nICYmICFlcnJvck1lc3NhZ2UgJiYgdHVybnMubGVuZ3RoID09PSAwID8gPGRpdiBjbGFzc05hbWU9XCJpbmxpbmUtc3RhdGUgZW1wdHktc3RhdGVcIj48c3Bhbj5ObyBwYXJzZWQgdHJhbnNjcmlwdCB0dXJucyBhcmUgYXZhaWxhYmxlLjwvc3Bhbj48L2Rpdj4gOiBudWxsfVxuICAgICAge3R1cm5zLmxlbmd0aCA+IDAgPyAoXG4gICAgICAgIDxvbCBjbGFzc05hbWU9XCJ0dXJuLWxpc3RcIj5cbiAgICAgICAgICB7dHVybnMubWFwKCh0dXJuKSA9PiB7XG4gICAgICAgICAgICBjb25zdCByb2xlOiBTcGVha2VyUm9sZSA9IHR1cm4uaW5mZXJyZWRfcm9sZSA/PyAndW5rbm93bidcbiAgICAgICAgICAgIGNvbnN0IHNlbGVjdGVkID0gc2VsZWN0ZWRUdXJuSWQgPT09IHR1cm4uaWRcbiAgICAgICAgICAgIHJldHVybiAoXG4gICAgICAgICAgICAgIDxsaSBpZD17YCR7aWRQcmVmaXh9LSR7dHVybi5pZH1gfSBjbGFzc05hbWU9e2B0dXJuLWl0ZW0gdHVybi1pdGVtLS0ke3JvbGV9JHtzZWxlY3RlZCA/ICcgdHVybi1pdGVtLS1zZWxlY3RlZCcgOiAnJ31gfSBrZXk9e3R1cm4uaWR9PlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidHVybi1tZXRhXCI+XG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0dXJuLXNwZWFrZXJcIj57dHVybi5yYXdfc3BlYWtlcl9sYWJlbCA/PyAnU3BlYWtlciBub3QgaWRlbnRpZmllZCd9PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPHRpbWU+e3R1cm4udGltZXN0YW1wID8/ICdObyB0aW1lc3RhbXAnfTwvdGltZT5cbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT17YHNwZWFrZXItYmFkZ2Ugc3BlYWtlci0ke3JvbGV9YH0+e3NwZWFrZXJMYWJlbHNbcm9sZV19PC9zcGFuPlxuICAgICAgICAgICAgICAgICAge3NlbGVjdGVkID8gPHNwYW4gY2xhc3NOYW1lPVwic291cmNlLXR1cm4tbGFiZWxcIj5Tb3VyY2UgZXZpZGVuY2U8L3NwYW4+IDogbnVsbH1cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8cD48RXZpZGVuY2VUZXh0IHRleHQ9e3R1cm4udGV4dH0gcXVvdGU9e3NlbGVjdGVkID8gc2VsZWN0ZWRRdW90ZSA6IG51bGx9IC8+PC9wPlxuICAgICAgICAgICAgICA8L2xpPlxuICAgICAgICAgICAgKVxuICAgICAgICAgIH0pfVxuICAgICAgICA8L29sPlxuICAgICAgKSA6IG51bGx9XG4gICAgPC9zZWN0aW9uPlxuICApXG59XG4iXX0=

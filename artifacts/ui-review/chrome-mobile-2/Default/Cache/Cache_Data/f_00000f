@@ -1,0 +1,381 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SignalReviewWorkspace.tsx");import RefreshRuntime from "/@react-refresh";
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("@vitejs/plugin-react can't detect preamble. Something is wrong. See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201");
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    RefreshRuntime.register(type, "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/SignalReviewWorkspace.tsx " + id);
+  };
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _jsxFileName = "D:\\WorkSpace\\Optimize_Finance\\signalbridge\\frontend\\src\\components\\SignalReviewWorkspace.tsx";
+import { SignalCard } from "/src/components/SignalCard.tsx";
+import { StatusBadge } from "/src/components/StatusBadge.tsx";
+import { TranscriptWorkspace } from "/src/components/TranscriptWorkspace.tsx";
+import __vite__cjsImport5_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=165d986c"; const _jsxDEV = __vite__cjsImport5_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport5_react_jsxDevRuntime["Fragment"];
+function SignalGroup({
+  title,
+  description,
+  signals,
+  selectedSignal,
+  onSelect
+}) {
+  return /* @__PURE__ */ _jsxDEV("section", {
+    className: "signal-nav__group",
+    children: [/* @__PURE__ */ _jsxDEV("header", {
+      children: [/* @__PURE__ */ _jsxDEV("div", {
+        children: [/* @__PURE__ */ _jsxDEV("h4", {
+          children: title
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 35,
+          columnNumber: 20
+        }, this), /* @__PURE__ */ _jsxDEV("p", {
+          children: description
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 35,
+          columnNumber: 36
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 35,
+        columnNumber: 15
+      }, this), /* @__PURE__ */ _jsxDEV("span", {
+        children: signals.length
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 35,
+        columnNumber: 62
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 35,
+      columnNumber: 7
+    }, this), signals.length ? /* @__PURE__ */ _jsxDEV("div", {
+      className: "signal-nav__list",
+      children: signals.map((signal) => {
+        const selected = selectedSignal === signal;
+        return /* @__PURE__ */ _jsxDEV("button", {
+          className: `signal-nav__item signal-nav__item--${signal.item_type}${selected ? " signal-nav__item--selected" : ""}`,
+          type: "button",
+          "aria-pressed": selected,
+          onClick: () => onSelect(signal),
+          children: [/* @__PURE__ */ _jsxDEV("span", {
+            className: "signal-nav__rank",
+            children: signal.rank.toString().padStart(2, "0")
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 48,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("span", {
+            className: "signal-nav__identity",
+            children: [/* @__PURE__ */ _jsxDEV("strong", {
+              children: signal.category
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 49,
+              columnNumber: 56
+            }, this), /* @__PURE__ */ _jsxDEV("small", {
+              children: signal.rationale
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 49,
+              columnNumber: 90
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 49,
+            columnNumber: 17
+          }, this), /* @__PURE__ */ _jsxDEV("span", {
+            className: "signal-nav__review",
+            children: [/* @__PURE__ */ _jsxDEV("strong", {
+              children: signal.final_score?.toFixed(2) ?? "\u2014"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 50,
+              columnNumber: 54
+            }, this), /* @__PURE__ */ _jsxDEV(StatusBadge, {
+              value: signal.validator_verdict
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 50,
+              columnNumber: 110
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 50,
+            columnNumber: 17
+          }, this)]
+        }, `${signal.item_type}-${signal.rank}-${signal.category}`, true, {
+          fileName: _jsxFileName,
+          lineNumber: 41,
+          columnNumber: 15
+        }, this);
+      })
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 37,
+      columnNumber: 9
+    }, this) : /* @__PURE__ */ _jsxDEV("p", {
+      className: "signal-nav__empty",
+      children: ["No final ", title.toLocaleLowerCase(), " found."]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 55,
+      columnNumber: 11
+    }, this)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 34,
+    columnNumber: 5
+  }, this);
+}
+_c = SignalGroup;
+export function SignalReviewWorkspace({
+  drivers,
+  blockers,
+  selectedSignal,
+  selectedTurnId,
+  turns,
+  turnsLoading,
+  turnsError,
+  evidenceLocateFailed,
+  onSelect,
+  onViewTranscript,
+  onRetryTurns
+}) {
+  return /* @__PURE__ */ _jsxDEV("div", {
+    className: "signal-review-workspace",
+    children: [/* @__PURE__ */ _jsxDEV("nav", {
+      className: "signal-nav",
+      "aria-label": "Final signals",
+      children: [/* @__PURE__ */ _jsxDEV(SignalGroup, {
+        title: "Drivers",
+        description: "Advisor motivations that may increase the likelihood of moving forward.",
+        signals: drivers,
+        selectedSignal,
+        onSelect
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 76,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV(SignalGroup, {
+        title: "Blockers",
+        description: "Advisor concerns or conditions that may delay or prevent movement.",
+        signals: blockers,
+        selectedSignal,
+        onSelect
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 77,
+        columnNumber: 9
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 75,
+      columnNumber: 7
+    }, this), /* @__PURE__ */ _jsxDEV("section", {
+      className: "selected-signal",
+      "aria-live": "polite",
+      children: selectedSignal ? /* @__PURE__ */ _jsxDEV(_Fragment, {
+        children: [selectedSignal.validator_verdict === "needs_review" ? /* @__PURE__ */ _jsxDEV("p", {
+          className: "review-explanation",
+          children: [/* @__PURE__ */ _jsxDEV("strong", {
+            children: "Needs review."
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 82,
+            columnNumber: 102
+          }, this), " Grounded in the transcript, but the interpretation should be confirmed."]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 82,
+          columnNumber: 68
+        }, this) : null, /* @__PURE__ */ _jsxDEV(SignalCard, {
+          signal: selectedSignal,
+          onViewEvidence: onViewTranscript
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 83,
+          columnNumber: 13
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          className: "selected-signal__transcript",
+          children: [/* @__PURE__ */ _jsxDEV("header", {
+            children: [/* @__PURE__ */ _jsxDEV("div", {
+              children: [/* @__PURE__ */ _jsxDEV("p", {
+                className: "eyebrow",
+                children: "Source evidence"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 85,
+                columnNumber: 28
+              }, this), /* @__PURE__ */ _jsxDEV("h4", {
+                children: "Transcript context"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 85,
+                columnNumber: 70
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 85,
+              columnNumber: 23
+            }, this), /* @__PURE__ */ _jsxDEV("button", {
+              className: "evidence-link",
+              type: "button",
+              onClick: () => onViewTranscript(selectedSignal),
+              children: ["Open full transcript ", /* @__PURE__ */ _jsxDEV("span", {
+                "aria-hidden": "true",
+                children: "\u2192"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 85,
+                columnNumber: 221
+              }, this)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 85,
+              columnNumber: 103
+            }, this)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 85,
+            columnNumber: 15
+          }, this), /* @__PURE__ */ _jsxDEV(TranscriptWorkspace, {
+            turns,
+            selectedTurnId,
+            selectedQuote: selectedSignal.advisor_quote,
+            loading: turnsLoading,
+            errorMessage: turnsError,
+            evidenceLocateFailed,
+            onRetry: onRetryTurns,
+            compact: true,
+            idPrefix: "insight-turn"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 86,
+            columnNumber: 15
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 84,
+          columnNumber: 13
+        }, this)]
+      }, void 0, true) : /* @__PURE__ */ _jsxDEV("div", {
+        className: "selected-signal__empty",
+        children: [/* @__PURE__ */ _jsxDEV("h4", {
+          children: "Select an insight"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 89,
+          columnNumber: 53
+        }, this), /* @__PURE__ */ _jsxDEV("p", {
+          children: "Choose a Driver or Blocker to review its rationale and transcript evidence."
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 89,
+          columnNumber: 79
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 89,
+        columnNumber: 13
+      }, this)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 79,
+      columnNumber: 7
+    }, this)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 74,
+    columnNumber: 5
+  }, this);
+}
+_c2 = SignalReviewWorkspace;
+var _c, _c2;
+$RefreshReg$(_c, "SignalGroup");
+$RefreshReg$(_c2, "SignalReviewWorkspace");
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+  import.meta.hot.accept();
+  if (!window.__vite_plugin_react_timeout) {
+    window.__vite_plugin_react_timeout = setTimeout(() => {
+      window.__vite_plugin_react_timeout = 0;
+      RefreshRuntime.performReactRefresh();
+    }, 30);
+  }
+}
+
+/*{
+  "version": 3,
+  "mappings": "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",
+  "names": [
+    "SignalCard",
+    "StatusBadge",
+    "TranscriptWorkspace",
+    "SignalGroup",
+    "title",
+    "description",
+    "signals",
+    "selectedSignal",
+    "onSelect",
+    "_jsxDEV",
+    "className",
+    "children",
+    "_jsxFileName",
+    "length",
+    "map",
+    "signal",
+    "selected",
+    "item_type",
+    "type",
+    "onClick",
+    "rank",
+    "toString",
+    "padStart",
+    "category",
+    "rationale",
+    "final_score",
+    "toFixed",
+    "value",
+    "validator_verdict",
+    "toLocaleLowerCase",
+    "_c",
+    "SignalReviewWorkspace",
+    "drivers",
+    "blockers",
+    "selectedTurnId",
+    "turns",
+    "turnsLoading",
+    "turnsError",
+    "evidenceLocateFailed",
+    "onViewTranscript",
+    "onRetryTurns",
+    "onViewEvidence",
+    "selectedQuote",
+    "advisor_quote",
+    "loading",
+    "errorMessage",
+    "onRetry",
+    "compact",
+    "idPrefix",
+    "_c2",
+    "$RefreshReg$"
+  ],
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/SignalReviewWorkspace.tsx"
+  ],
+  "file": "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/SignalReviewWorkspace.tsx",
+  "sourcesContent": [
+    "import type { FinalSignal, TranscriptTurn } from '../types/transcript'\nimport { SignalCard } from './SignalCard'\nimport { StatusBadge } from './StatusBadge'\nimport { TranscriptWorkspace } from './TranscriptWorkspace'\n\ninterface SignalReviewWorkspaceProps {\n  drivers: FinalSignal[]\n  blockers: FinalSignal[]\n  selectedSignal: FinalSignal | null\n  selectedTurnId: number | null\n  turns: TranscriptTurn[]\n  turnsLoading: boolean\n  turnsError?: string | null\n  evidenceLocateFailed: boolean\n  onSelect: (signal: FinalSignal) => void\n  onViewTranscript: (signal: FinalSignal) => void\n  onRetryTurns: () => void\n}\n\nfunction SignalGroup({\n  title,\n  description,\n  signals,\n  selectedSignal,\n  onSelect,\n}: {\n  title: string\n  description: string\n  signals: FinalSignal[]\n  selectedSignal: FinalSignal | null\n  onSelect: (signal: FinalSignal) => void\n}) {\n  return (\n    <section className=\"signal-nav__group\">\n      <header><div><h4>{title}</h4><p>{description}</p></div><span>{signals.length}</span></header>\n      {signals.length ? (\n        <div className=\"signal-nav__list\">\n          {signals.map((signal) => {\n            const selected = selectedSignal === signal\n            return (\n              <button\n                className={`signal-nav__item signal-nav__item--${signal.item_type}${selected ? ' signal-nav__item--selected' : ''}`}\n                type=\"button\"\n                aria-pressed={selected}\n                onClick={() => onSelect(signal)}\n                key={`${signal.item_type}-${signal.rank}-${signal.category}`}\n              >\n                <span className=\"signal-nav__rank\">{signal.rank.toString().padStart(2, '0')}</span>\n                <span className=\"signal-nav__identity\"><strong>{signal.category}</strong><small>{signal.rationale}</small></span>\n                <span className=\"signal-nav__review\"><strong>{signal.final_score?.toFixed(2) ?? '—'}</strong><StatusBadge value={signal.validator_verdict} /></span>\n              </button>\n            )\n          })}\n        </div>\n      ) : <p className=\"signal-nav__empty\">No final {title.toLocaleLowerCase()} found.</p>}\n    </section>\n  )\n}\n\nexport function SignalReviewWorkspace({\n  drivers,\n  blockers,\n  selectedSignal,\n  selectedTurnId,\n  turns,\n  turnsLoading,\n  turnsError,\n  evidenceLocateFailed,\n  onSelect,\n  onViewTranscript,\n  onRetryTurns,\n}: SignalReviewWorkspaceProps) {\n  return (\n    <div className=\"signal-review-workspace\">\n      <nav className=\"signal-nav\" aria-label=\"Final signals\">\n        <SignalGroup title=\"Drivers\" description=\"Advisor motivations that may increase the likelihood of moving forward.\" signals={drivers} selectedSignal={selectedSignal} onSelect={onSelect} />\n        <SignalGroup title=\"Blockers\" description=\"Advisor concerns or conditions that may delay or prevent movement.\" signals={blockers} selectedSignal={selectedSignal} onSelect={onSelect} />\n      </nav>\n      <section className=\"selected-signal\" aria-live=\"polite\">\n        {selectedSignal ? (\n          <>\n            {selectedSignal.validator_verdict === 'needs_review' ? <p className=\"review-explanation\"><strong>Needs review.</strong> Grounded in the transcript, but the interpretation should be confirmed.</p> : null}\n            <SignalCard signal={selectedSignal} onViewEvidence={onViewTranscript} />\n            <div className=\"selected-signal__transcript\">\n              <header><div><p className=\"eyebrow\">Source evidence</p><h4>Transcript context</h4></div><button className=\"evidence-link\" type=\"button\" onClick={() => onViewTranscript(selectedSignal)}>Open full transcript <span aria-hidden=\"true\">→</span></button></header>\n              <TranscriptWorkspace turns={turns} selectedTurnId={selectedTurnId} selectedQuote={selectedSignal.advisor_quote} loading={turnsLoading} errorMessage={turnsError} evidenceLocateFailed={evidenceLocateFailed} onRetry={onRetryTurns} compact idPrefix=\"insight-turn\" />\n            </div>\n          </>\n        ) : <div className=\"selected-signal__empty\"><h4>Select an insight</h4><p>Choose a Driver or Blocker to review its rationale and transcript evidence.</p></div>}\n      </section>\n    </div>\n  )\n}\n"
+  ]
+}*/
+
+//# sourceMappingURL=data:application/json;base64,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QUEsY0FBUUMsV0FBVTtBQUFBLGNBQWdCUSxNQUFLO0FBQUEsY0FBU0MsU0FBU0EsTUFBTW9CLGlCQUFpQmhDLGNBQWM7QUFBQSxjQUFFSSxXQUFDLHlCQUFxQkY7QUFBQSxnQkFBTSxlQUFZO0FBQUEsZ0JBQU1FLFVBQUM7QUFBQSxjQUFDO0FBQUE7QUFBQUM7QUFBQTtBQUFBLHFCQUFNLENBQUM7QUFBQTtBQUFBO0FBQUFBO0FBQUE7QUFBQSxtQkFBUSxDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsaUJBQVEsR0FDaFFILHdCQUFDUCxxQkFBbUI7QUFBQSxZQUFDaUM7QUFBQUEsWUFBY0Q7QUFBQUEsWUFBZ0NRLGVBQWVuQyxlQUFlb0M7QUFBQUEsWUFBZUMsU0FBU1I7QUFBQUEsWUFBY1MsY0FBY1I7QUFBQUEsWUFBWUM7QUFBQUEsWUFBNENRLFNBQVNOO0FBQUFBLFlBQWNPLFNBQU87QUFBQSxZQUFDQyxVQUFTO0FBQUEsVUFBYztBQUFBO0FBQUFwQztBQUFBO0FBQUEsaUJBQUUsQ0FBQztBQUFBO0FBQUE7QUFBQUE7QUFBQTtBQUFBLGVBQ25RLENBQUM7QUFBQSxxQkFDTixJQUNBSDtBQUFBLFFBQUtDLFdBQVU7QUFBQSxRQUF3QkMsV0FBQ0Y7QUFBQSxvQkFBSTtBQUFBLFFBQWlCO0FBQUE7QUFBQUc7QUFBQTtBQUFBLGVBQUksR0FBQ0g7QUFBQSxvQkFBRztBQUFBLFFBQTJFO0FBQUE7QUFBQUc7QUFBQTtBQUFBLGVBQUcsQ0FBQztBQUFBO0FBQUE7QUFBQUE7QUFBQTtBQUFBLGFBQUs7QUFBQSxJQUFDO0FBQUE7QUFBQUE7QUFBQTtBQUFBLFdBQ3ZKLENBQUM7QUFBQTtBQUFBO0FBQUFBO0FBQUE7QUFBQSxTQUNQO0FBRVQ7QUFBQ3FDLE1BakNlbEI7QUFBcUI7QUFBQW1CO0FBQUFBIiwibmFtZXMiOlsiU2lnbmFsQ2FyZCIsIlN0YXR1c0JhZGdlIiwiVHJhbnNjcmlwdFdvcmtzcGFjZSIsIlNpZ25hbEdyb3VwIiwidGl0bGUiLCJkZXNjcmlwdGlvbiIsInNpZ25hbHMiLCJzZWxlY3RlZFNpZ25hbCIsIm9uU2VsZWN0IiwiX2pzeERFViIsImNsYXNzTmFtZSIsImNoaWxkcmVuIiwiX2pzeEZpbGVOYW1lIiwibGVuZ3RoIiwibWFwIiwic2lnbmFsIiwic2VsZWN0ZWQiLCJpdGVtX3R5cGUiLCJ0eXBlIiwib25DbGljayIsInJhbmsiLCJ0b1N0cmluZyIsInBhZFN0YXJ0IiwiY2F0ZWdvcnkiLCJyYXRpb25hbGUiLCJmaW5hbF9zY29yZSIsInRvRml4ZWQiLCJ2YWx1ZSIsInZhbGlkYXRvcl92ZXJkaWN0IiwidG9Mb2NhbGVMb3dlckNhc2UiLCJfYyIsIlNpZ25hbFJldmlld1dvcmtzcGFjZSIsImRyaXZlcnMiLCJibG9ja2VycyIsInNlbGVjdGVkVHVybklkIiwidHVybnMiLCJ0dXJuc0xvYWRpbmciLCJ0dXJuc0Vycm9yIiwiZXZpZGVuY2VMb2NhdGVGYWlsZWQiLCJvblZpZXdUcmFuc2NyaXB0Iiwib25SZXRyeVR1cm5zIiwib25WaWV3RXZpZGVuY2UiLCJzZWxlY3RlZFF1b3RlIiwiYWR2aXNvcl9xdW90ZSIsImxvYWRpbmciLCJlcnJvck1lc3NhZ2UiLCJvblJldHJ5IiwiY29tcGFjdCIsImlkUHJlZml4IiwiX2MyIiwiJFJlZnJlc2hSZWckIl0sInNvdXJjZXMiOlsiRDovV29ya1NwYWNlL09wdGltaXplX0ZpbmFuY2Uvc2lnbmFsYnJpZGdlL2Zyb250ZW5kL3NyYy9jb21wb25lbnRzL1NpZ25hbFJldmlld1dvcmtzcGFjZS50c3giXSwiZmlsZSI6IkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9TaWduYWxSZXZpZXdXb3Jrc3BhY2UudHN4Iiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHR5cGUgeyBGaW5hbFNpZ25hbCwgVHJhbnNjcmlwdFR1cm4gfSBmcm9tICcuLi90eXBlcy90cmFuc2NyaXB0J1xuaW1wb3J0IHsgU2lnbmFsQ2FyZCB9IGZyb20gJy4vU2lnbmFsQ2FyZCdcbmltcG9ydCB7IFN0YXR1c0JhZGdlIH0gZnJvbSAnLi9TdGF0dXNCYWRnZSdcbmltcG9ydCB7IFRyYW5zY3JpcHRXb3Jrc3BhY2UgfSBmcm9tICcuL1RyYW5zY3JpcHRXb3Jrc3BhY2UnXG5cbmludGVyZmFjZSBTaWduYWxSZXZpZXdXb3Jrc3BhY2VQcm9wcyB7XG4gIGRyaXZlcnM6IEZpbmFsU2lnbmFsW11cbiAgYmxvY2tlcnM6IEZpbmFsU2lnbmFsW11cbiAgc2VsZWN0ZWRTaWduYWw6IEZpbmFsU2lnbmFsIHwgbnVsbFxuICBzZWxlY3RlZFR1cm5JZDogbnVtYmVyIHwgbnVsbFxuICB0dXJuczogVHJhbnNjcmlwdFR1cm5bXVxuICB0dXJuc0xvYWRpbmc6IGJvb2xlYW5cbiAgdHVybnNFcnJvcj86IHN0cmluZyB8IG51bGxcbiAgZXZpZGVuY2VMb2NhdGVGYWlsZWQ6IGJvb2xlYW5cbiAgb25TZWxlY3Q6IChzaWduYWw6IEZpbmFsU2lnbmFsKSA9PiB2b2lkXG4gIG9uVmlld1RyYW5zY3JpcHQ6IChzaWduYWw6IEZpbmFsU2lnbmFsKSA9PiB2b2lkXG4gIG9uUmV0cnlUdXJuczogKCkgPT4gdm9pZFxufVxuXG5mdW5jdGlvbiBTaWduYWxHcm91cCh7XG4gIHRpdGxlLFxuICBkZXNjcmlwdGlvbixcbiAgc2lnbmFscyxcbiAgc2VsZWN0ZWRTaWduYWwsXG4gIG9uU2VsZWN0LFxufToge1xuICB0aXRsZTogc3RyaW5nXG4gIGRlc2NyaXB0aW9uOiBzdHJpbmdcbiAgc2lnbmFsczogRmluYWxTaWduYWxbXVxuICBzZWxlY3RlZFNpZ25hbDogRmluYWxTaWduYWwgfCBudWxsXG4gIG9uU2VsZWN0OiAoc2lnbmFsOiBGaW5hbFNpZ25hbCkgPT4gdm9pZFxufSkge1xuICByZXR1cm4gKFxuICAgIDxzZWN0aW9uIGNsYXNzTmFtZT1cInNpZ25hbC1uYXZfX2dyb3VwXCI+XG4gICAgICA8aGVhZGVyPjxkaXY+PGg0Pnt0aXRsZX08L2g0PjxwPntkZXNjcmlwdGlvbn08L3A+PC9kaXY+PHNwYW4+e3NpZ25hbHMubGVuZ3RofTwvc3Bhbj48L2hlYWRlcj5cbiAgICAgIHtzaWduYWxzLmxlbmd0aCA/IChcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzaWduYWwtbmF2X19saXN0XCI+XG4gICAgICAgICAge3NpZ25hbHMubWFwKChzaWduYWwpID0+IHtcbiAgICAgICAgICAgIGNvbnN0IHNlbGVjdGVkID0gc2VsZWN0ZWRTaWduYWwgPT09IHNpZ25hbFxuICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YHNpZ25hbC1uYXZfX2l0ZW0gc2lnbmFsLW5hdl9faXRlbS0tJHtzaWduYWwuaXRlbV90eXBlfSR7c2VsZWN0ZWQgPyAnIHNpZ25hbC1uYXZfX2l0ZW0tLXNlbGVjdGVkJyA6ICcnfWB9XG4gICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgYXJpYS1wcmVzc2VkPXtzZWxlY3RlZH1cbiAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBvblNlbGVjdChzaWduYWwpfVxuICAgICAgICAgICAgICAgIGtleT17YCR7c2lnbmFsLml0ZW1fdHlwZX0tJHtzaWduYWwucmFua30tJHtzaWduYWwuY2F0ZWdvcnl9YH1cbiAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInNpZ25hbC1uYXZfX3JhbmtcIj57c2lnbmFsLnJhbmsudG9TdHJpbmcoKS5wYWRTdGFydCgyLCAnMCcpfTwvc3Bhbj5cbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJzaWduYWwtbmF2X19pZGVudGl0eVwiPjxzdHJvbmc+e3NpZ25hbC5jYXRlZ29yeX08L3N0cm9uZz48c21hbGw+e3NpZ25hbC5yYXRpb25hbGV9PC9zbWFsbD48L3NwYW4+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwic2lnbmFsLW5hdl9fcmV2aWV3XCI+PHN0cm9uZz57c2lnbmFsLmZpbmFsX3Njb3JlPy50b0ZpeGVkKDIpID8/ICfigJQnfTwvc3Ryb25nPjxTdGF0dXNCYWRnZSB2YWx1ZT17c2lnbmFsLnZhbGlkYXRvcl92ZXJkaWN0fSAvPjwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICApXG4gICAgICAgICAgfSl9XG4gICAgICAgIDwvZGl2PlxuICAgICAgKSA6IDxwIGNsYXNzTmFtZT1cInNpZ25hbC1uYXZfX2VtcHR5XCI+Tm8gZmluYWwge3RpdGxlLnRvTG9jYWxlTG93ZXJDYXNlKCl9IGZvdW5kLjwvcD59XG4gICAgPC9zZWN0aW9uPlxuICApXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBTaWduYWxSZXZpZXdXb3Jrc3BhY2Uoe1xuICBkcml2ZXJzLFxuICBibG9ja2VycyxcbiAgc2VsZWN0ZWRTaWduYWwsXG4gIHNlbGVjdGVkVHVybklkLFxuICB0dXJucyxcbiAgdHVybnNMb2FkaW5nLFxuICB0dXJuc0Vycm9yLFxuICBldmlkZW5jZUxvY2F0ZUZhaWxlZCxcbiAgb25TZWxlY3QsXG4gIG9uVmlld1RyYW5zY3JpcHQsXG4gIG9uUmV0cnlUdXJucyxcbn06IFNpZ25hbFJldmlld1dvcmtzcGFjZVByb3BzKSB7XG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJzaWduYWwtcmV2aWV3LXdvcmtzcGFjZVwiPlxuICAgICAgPG5hdiBjbGFzc05hbWU9XCJzaWduYWwtbmF2XCIgYXJpYS1sYWJlbD1cIkZpbmFsIHNpZ25hbHNcIj5cbiAgICAgICAgPFNpZ25hbEdyb3VwIHRpdGxlPVwiRHJpdmVyc1wiIGRlc2NyaXB0aW9uPVwiQWR2aXNvciBtb3RpdmF0aW9ucyB0aGF0IG1heSBpbmNyZWFzZSB0aGUgbGlrZWxpaG9vZCBvZiBtb3ZpbmcgZm9yd2FyZC5cIiBzaWduYWxzPXtkcml2ZXJzfSBzZWxlY3RlZFNpZ25hbD17c2VsZWN0ZWRTaWduYWx9IG9uU2VsZWN0PXtvblNlbGVjdH0gLz5cbiAgICAgICAgPFNpZ25hbEdyb3VwIHRpdGxlPVwiQmxvY2tlcnNcIiBkZXNjcmlwdGlvbj1cIkFkdmlzb3IgY29uY2VybnMgb3IgY29uZGl0aW9ucyB0aGF0IG1heSBkZWxheSBvciBwcmV2ZW50IG1vdmVtZW50LlwiIHNpZ25hbHM9e2Jsb2NrZXJzfSBzZWxlY3RlZFNpZ25hbD17c2VsZWN0ZWRTaWduYWx9IG9uU2VsZWN0PXtvblNlbGVjdH0gLz5cbiAgICAgIDwvbmF2PlxuICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPVwic2VsZWN0ZWQtc2lnbmFsXCIgYXJpYS1saXZlPVwicG9saXRlXCI+XG4gICAgICAgIHtzZWxlY3RlZFNpZ25hbCA/IChcbiAgICAgICAgICA8PlxuICAgICAgICAgICAge3NlbGVjdGVkU2lnbmFsLnZhbGlkYXRvcl92ZXJkaWN0ID09PSAnbmVlZHNfcmV2aWV3JyA/IDxwIGNsYXNzTmFtZT1cInJldmlldy1leHBsYW5hdGlvblwiPjxzdHJvbmc+TmVlZHMgcmV2aWV3Ljwvc3Ryb25nPiBHcm91bmRlZCBpbiB0aGUgdHJhbnNjcmlwdCwgYnV0IHRoZSBpbnRlcnByZXRhdGlvbiBzaG91bGQgYmUgY29uZmlybWVkLjwvcD4gOiBudWxsfVxuICAgICAgICAgICAgPFNpZ25hbENhcmQgc2lnbmFsPXtzZWxlY3RlZFNpZ25hbH0gb25WaWV3RXZpZGVuY2U9e29uVmlld1RyYW5zY3JpcHR9IC8+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNlbGVjdGVkLXNpZ25hbF9fdHJhbnNjcmlwdFwiPlxuICAgICAgICAgICAgICA8aGVhZGVyPjxkaXY+PHAgY2xhc3NOYW1lPVwiZXllYnJvd1wiPlNvdXJjZSBldmlkZW5jZTwvcD48aDQ+VHJhbnNjcmlwdCBjb250ZXh0PC9oND48L2Rpdj48YnV0dG9uIGNsYXNzTmFtZT1cImV2aWRlbmNlLWxpbmtcIiB0eXBlPVwiYnV0dG9uXCIgb25DbGljaz17KCkgPT4gb25WaWV3VHJhbnNjcmlwdChzZWxlY3RlZFNpZ25hbCl9Pk9wZW4gZnVsbCB0cmFuc2NyaXB0IDxzcGFuIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPuKGkjwvc3Bhbj48L2J1dHRvbj48L2hlYWRlcj5cbiAgICAgICAgICAgICAgPFRyYW5zY3JpcHRXb3Jrc3BhY2UgdHVybnM9e3R1cm5zfSBzZWxlY3RlZFR1cm5JZD17c2VsZWN0ZWRUdXJuSWR9IHNlbGVjdGVkUXVvdGU9e3NlbGVjdGVkU2lnbmFsLmFkdmlzb3JfcXVvdGV9IGxvYWRpbmc9e3R1cm5zTG9hZGluZ30gZXJyb3JNZXNzYWdlPXt0dXJuc0Vycm9yfSBldmlkZW5jZUxvY2F0ZUZhaWxlZD17ZXZpZGVuY2VMb2NhdGVGYWlsZWR9IG9uUmV0cnk9e29uUmV0cnlUdXJuc30gY29tcGFjdCBpZFByZWZpeD1cImluc2lnaHQtdHVyblwiIC8+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8Lz5cbiAgICAgICAgKSA6IDxkaXYgY2xhc3NOYW1lPVwic2VsZWN0ZWQtc2lnbmFsX19lbXB0eVwiPjxoND5TZWxlY3QgYW4gaW5zaWdodDwvaDQ+PHA+Q2hvb3NlIGEgRHJpdmVyIG9yIEJsb2NrZXIgdG8gcmV2aWV3IGl0cyByYXRpb25hbGUgYW5kIHRyYW5zY3JpcHQgZXZpZGVuY2UuPC9wPjwvZGl2Pn1cbiAgICAgIDwvc2VjdGlvbj5cbiAgICA8L2Rpdj5cbiAgKVxufVxuIl19

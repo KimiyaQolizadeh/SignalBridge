@@ -22,6 +22,52 @@ export function PipelineStatus({
   failed,
 }: PipelineStatusProps) {
   const activeIndex = stages.findIndex((stage) => stage.key === status?.current_stage)
+  const steps = (
+    <ol className="pipeline-steps">
+      {stages.map((stage, index) => {
+        const state = analysisComplete
+          ? 'completed'
+          : failed && index === activeIndex
+            ? 'failed'
+            : index < activeIndex
+              ? 'completed'
+              : index === activeIndex
+                ? 'active'
+                : 'pending'
+        return (
+          <li className={`pipeline-step pipeline-step--${state}`} key={stage.key}>
+            <span className="pipeline-step__marker" aria-hidden="true">
+              {state === 'completed' ? '✓' : index + 1}
+            </span>
+            <span>
+              <strong>{stage.label}</strong>
+              <small>
+                {state === 'completed'
+                  ? 'Complete'
+                  : state === 'active'
+                    ? 'In progress'
+                    : state === 'failed'
+                      ? 'Failed'
+                      : 'Pending'}
+              </small>
+            </span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+
+  if (analysisComplete && !failed) {
+    return (
+      <details className="pipeline-disclosure">
+        <summary>
+          <span><strong>Analysis complete</strong><small>7 processing stages</small></span>
+          <span aria-hidden="true">+</span>
+        </summary>
+        <div className="pipeline-disclosure__content">{steps}</div>
+      </details>
+    )
+  }
 
   return (
     <section className="pipeline-panel" aria-labelledby="pipeline-status-title">
@@ -35,45 +81,12 @@ export function PipelineStatus({
             ? 'Needs attention'
             : status?.status === 'queued'
               ? 'Starting'
-            : analysisComplete
-              ? '7 of 7 stages complete'
               : activeIndex >= 0
                 ? `Stage ${activeIndex + 1} of 7`
                 : 'Not started'}
         </span>
       </div>
-      <ol className="pipeline-steps">
-        {stages.map((stage, index) => {
-          const state = analysisComplete
-            ? 'completed'
-            : failed && index === activeIndex
-              ? 'failed'
-              : index < activeIndex
-                ? 'completed'
-                : index === activeIndex
-                  ? 'active'
-                  : 'pending'
-          return (
-            <li className={`pipeline-step pipeline-step--${state}`} key={stage.key}>
-              <span className="pipeline-step__marker" aria-hidden="true">
-                {state === 'completed' ? '✓' : index + 1}
-              </span>
-              <span>
-                <strong>{stage.label}</strong>
-                <small>
-                  {state === 'completed'
-                    ? 'Complete'
-                    : state === 'active'
-                      ? 'In progress'
-                      : state === 'failed'
-                        ? 'Failed'
-                        : 'Pending'}
-                </small>
-              </span>
-            </li>
-          )
-        })}
-      </ol>
+      {steps}
     </section>
   )
 }

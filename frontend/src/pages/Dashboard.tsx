@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom'
 
 import { ApiError } from '../api/client'
 import { getFinalSignals, getTranscripts } from '../api/transcripts'
-import { MetricCard } from '../components/MetricCard'
 import { StatusBadge } from '../components/StatusBadge'
-import type { Transcript } from '../types/transcript'
+import type { FinalSignal, Transcript } from '../types/transcript'
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -153,6 +152,7 @@ export function Dashboard() {
       blockers: signals.filter((signal) => signal.item_type === 'blocker').length,
       loading: transcript.status === 'finalized' && Boolean(query?.isLoading),
       available: transcript.status === 'finalized' && Boolean(query?.isSuccess),
+      strongest: signals.filter((signal) => signal.validator_verdict === 'pass').reduce<FinalSignal | null>((best, signal) => !best || (signal.final_score ?? -Infinity) > (best.final_score ?? -Infinity) ? signal : best, null),
     }]
   }))
   const counts = useMemo(() => {
@@ -182,14 +182,6 @@ export function Dashboard() {
   }, [search, sort, statusFilter, transcripts])
 
   const hasActiveFilters = search.trim().length > 0 || statusFilter !== 'all'
-  const processingCount = transcripts.filter((transcript) => {
-    const normalized = transcript.status.toLowerCase()
-    return (
-      normalized.includes('processing') ||
-      normalized.includes('running') ||
-      normalized.includes('progress')
-    )
-  }).length
 
   function clearFilters() {
     setSearch('')
@@ -200,27 +192,13 @@ export function Dashboard() {
     <section aria-labelledby="dashboard-title">
       <div className="page-header">
         <div className="page-header__content">
-          <p className="eyebrow">Relationship intelligence</p>
-          <h2 className="page-title" id="dashboard-title">Transcript workspace</h2>
+          <p className="eyebrow">AI meeting intelligence</p>
+          <h2 className="page-title" id="dashboard-title">Transcript insights</h2>
           <p className="page-description">
-            Monitor meeting analyses and review evidence-grounded business signals.
+            Review the business insights AI discovered across your transcripts.
           </p>
         </div>
-        <div className="page-header__actions">
-          <Link className="button button--primary" to="/upload">
-            Upload transcript
-          </Link>
-        </div>
       </div>
-
-      {transcriptsQuery.isSuccess && transcripts.length > 0 ? (
-        <section className="metric-grid metric-grid--dashboard" aria-label="Transcript summary">
-          <MetricCard label="Total transcripts" value={counts.all} detail="Records in workspace" />
-          <MetricCard label="Analysis complete" value={counts['ready-for-review']} detail="Ready for review" tone="positive" />
-          <MetricCard label="Processing" value={processingCount} detail="Active analyses" />
-          <MetricCard label="Needs attention" value={counts.failed} detail="Failed analyses" tone={counts.failed ? 'warning' : 'neutral'} />
-        </section>
-      ) : null}
 
       {transcriptsQuery.isLoading ? (
         <div className="skeleton-table" role="status" aria-label="Loading transcript workspace">
@@ -265,7 +243,7 @@ export function Dashboard() {
           <section className="dashboard-work-queue" aria-labelledby="work-queue-title">
             <div className="section-header dashboard-list-header">
               <div>
-                <h3 id="work-queue-title">Work queue</h3>
+                <h3 id="work-queue-title">Transcripts</h3>
                 <p className="metadata-text">
                   {visibleTranscripts.length} of {counts.all} transcripts
                 </p>
@@ -360,6 +338,12 @@ export function Dashboard() {
                                 <Link className="file-name file-link" to={`/transcripts/${transcript.id}`}>
                                   {transcript.file_name}
                                 </Link>
+                                {signalCounts.get(transcript.id)?.strongest ? (
+                                  <p className="dashboard-strongest-signal">
+                                    <span>{signalCounts.get(transcript.id)?.strongest?.item_type}</span>
+                                    {signalCounts.get(transcript.id)?.strongest?.category}
+                                  </p>
+                                ) : null}
                               </td>
                               <td><StatusBadge value={transcript.status} label={workflow.label} /></td>
                               <td><SignalCount value={signalCounts.get(transcript.id)?.drivers ?? 0} loading={signalCounts.get(transcript.id)?.loading ?? false} available={signalCounts.get(transcript.id)?.available ?? false} /></td>

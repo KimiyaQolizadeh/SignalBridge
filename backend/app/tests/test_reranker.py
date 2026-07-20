@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 
 from backend.app.database import Base
 from backend.app.llm_schemas import FinalRerankOutput, FinalSelectedSignal
-from backend.app.models import CandidateSignal, FinalSignal, SignalScore, Transcript
+from backend.app.models import CandidateSignal, FinalSignal, SignalScore, Transcript, TranscriptTurn
 from backend.app.services import reranker
 from backend.app.services.reranker import rerank_final_signals_for_transcript
 
@@ -44,15 +44,17 @@ def add_candidate(
     support_score: float = 0.9,
     advisor_side_score: float = 0.9,
     category: str | None = None,
+    quote: str | None = None,
+    rationale: str = "Synthetic decision-relevant rationale.",
 ) -> CandidateSignal:
     candidate = CandidateSignal(
         transcript_id=transcript.id,
         item_type=item_type,
         category=category or f"category_{item_type}_{final_score}",
-        advisor_quote=f"Synthetic {item_type} evidence {final_score}.",
+        advisor_quote=quote or f"I need this {item_type} factor to move forward.",
         timestamp="00:00:00",
         evidence_strength=evidence_strength,
-        rationale="Synthetic decision-relevant rationale.",
+        rationale=rationale,
         extraction_confidence=0.9,
         source_turn_ids=[1],
         duplicate_group_id="g_synthetic",
@@ -91,7 +93,7 @@ def test_zero_eligible_finalizes_without_llm(
     db: Session, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     transcript = create_transcript(db)
-    add_candidate(db, transcript, verdict="pass", final_score=3.0)
+    add_candidate(db, transcript, verdict="pass", final_score=2.99)
     monkeypatch.setattr(
         reranker,
         "call_llm_json",
@@ -366,3 +368,144 @@ def test_above_threshold_selection_reason_is_unchanged(
     summary = rerank_final_signals_for_transcript(transcript.id, db)
 
     assert summary["selection_reasons"] == {candidate.id: "above_threshold"}
+@pytest.mark.parametrize(
+    "quote",
+    [
+        "Everyone is looking for a way to take back-end work off their plate.",
+        "Every advisor wants more time with clients.",
+    ],
+)
+def test_general_observation_needs_review_does_not_fallback(
+    db: Session, monkeypatch: pytest.MonkeyPatch, quote: str
+) -> None:
+    transcript = create_transcript(db)
+    add_candidate(db, transcript, verdict="needs_review", final_score=3.45, quote=quote)
+    monkeypatch.setattr(reranker, "call_llm_json", lambda **_: pytest.fail())
+
+    summary = rerank_final_signals_for_transcript(transcript.id, db)
+
+    assert summary["final_driver_count"] == 0
+    assert saved_final_signals(db, transcript.id) == []
+
+
+def test_conditional_hypothetical_benefit_does_not_fallback(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    add_candidate(
+        db, transcript, verdict="needs_review", final_score=3.45,
+        quote="If it works, it could free up time for me.",
+    )
+    monkeypatch.setattr(reranker, "call_llm_json", lambda **_: pytest.fail())
+
+    assert rerank_final_signals_for_transcript(transcript.id, db)["final_driver_count"] == 0
+
+
+def test_driver_and_blocker_fallback_gates_are_independent(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transcript = create_transcript(db)
+    blocker = add_candidate(
+        db, transcript, item_type="blocker", verdict="needs_review", final_score=3.4,
+        quote="I cannot proceed unless my partner approves.",
+    )
+    add_candidate(
+        db, transcript, item_type="driver", verdict="needs_review", final_score=3.45,
+        quote="Everyone wants more support.",
+    )
+    monkeypatch.setattr(reranker, "call_llm_json", lambda **_: pytest.fail())
+
+    summary = rerank_final_signals_for_transcript(transcript.id, db)
+
+    assert summary["final_driver_count"] == 0
+    assert summary["final_blocker_count"] == 1
+    assert summary["selection_reasons"] == {blocker.id: "best_grounded_fallback"}
+
+
+def test_transcript_three_general_candidate_is_not_fallback() -> None:
+    candidate = CandidateSignal(
+        item_type="driver", category="Client-Facing Time",
+        advisor_quote="Everyone is looking for a way to take some of the back end off of their plate, so they can get out there and get in front of more clients and prospects.",
+        rationale="The advisor states a general goal of reducing back-end work.",
+        evidence_strength="explicit", is_canonical=True, source_turn_ids=[1],
+    )
+    candidate.score = SignalScore(
+        validator_verdict="needs_review", rejection_reason="weak_relevance",
+        advisor_ownership=4, decision_impact=3, explicitness=4, urgency=2,
+        evidence_quality=4, final_score=3.45,
+    )
+
+    assert reranker._is_fallback_eligible(candidate) is False
+
+def context_candidate(item_type: str, quote: str, category: str = "Context") -> CandidateSignal:
+    candidate = CandidateSignal(
+        item_type=item_type, category=category, advisor_quote=quote,
+        rationale="The evidence affects movement.", evidence_strength="explicit",
+        is_canonical=True, source_turn_ids=[2],
+    )
+    candidate.score = SignalScore(
+        validator_verdict="pass", advisor_ownership=4, decision_impact=3,
+        evidence_quality=4, explicitness=4, urgency=2, final_score=3.0,
+    )
+    return candidate
+
+
+def context_turn(turn_id: int, index: int, text: str) -> TranscriptTurn:
+    return TranscriptTurn(
+        id=turn_id, transcript_id=1, turn_index=index, timestamp=f"00:00:0{index}",
+        raw_speaker_label="Advisor", inferred_role="advisor", text=text,
+    )
+
+
+def test_previous_concern_completes_threshold_blocker() -> None:
+    candidate = context_candidate("blocker", "I'm not anywhere near that threshold for you guys.", "Threshold Status")
+    turns = [
+        context_turn(1, 0, "Yeah, I'm worried about that."),
+        context_turn(2, 1, candidate.advisor_quote),
+    ]
+    context = reranker._candidate_context(candidate, turns)
+
+    reranker._apply_contextual_direction(candidate, context)
+
+    assert candidate.category == "Minimum Book Threshold"
+    assert "concerned" in candidate.rationale
+    assert reranker._is_fallback_eligible(candidate, context) is True
+
+
+def test_current_firm_compliance_friction_becomes_driver() -> None:
+    candidate = context_candidate("blocker", "Then it is hard to put something out that's timely.")
+    context = "With all the rules that every firm I've worked with has put on, it is hard to be timely."
+
+    reranker._apply_contextual_direction(candidate, context)
+
+    assert candidate.item_type == "driver"
+    assert candidate.category == "Communication Flexibility"
+
+
+def test_optimize_proof_requirement_remains_blocker() -> None:
+    candidate = context_candidate("blocker", "It is hard to put something out that's timely.")
+    context = "Every firm has rules, and I need proof that Optimize is different before proceeding."
+
+    reranker._apply_contextual_direction(candidate, context)
+
+    assert candidate.item_type == "blocker"
+
+
+def test_same_turn_dedicated_support_resolves_time_constraint() -> None:
+    candidate = context_candidate("blocker", "I manage money. I don't have time for financial planning.")
+    source = "I manage money. I don't have time for financial planning. So, fortunately, we have dedicated financial planning support whose job is to support us."
+
+    assert reranker._passes_contextual_final_gate(candidate, source, source) is False
+
+
+def test_positive_continuation_resolves_accountability_blocker() -> None:
+    candidate = context_candidate("blocker", "We have to tell clients the rationale for every decision.")
+    context = candidate.advisor_quote + " It has worked very well."
+
+    assert reranker._passes_contextual_final_gate(candidate, context, candidate.advisor_quote) is False
+
+
+def test_existing_practice_outcome_is_not_standalone_driver() -> None:
+    candidate = context_candidate("driver", "We use this strategy for income generation and partial portfolio protection.")
+
+    assert reranker._passes_contextual_final_gate(candidate, candidate.advisor_quote, candidate.advisor_quote) is False

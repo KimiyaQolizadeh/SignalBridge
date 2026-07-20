@@ -1,0 +1,110 @@
+import { API_BASE_URL, ApiError, apiRequest } from "/src/api/client.ts";
+function getDownloadFilename(contentDisposition, fallback) {
+  if (!contentDisposition)
+    return fallback;
+  const encodedMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encodedMatch) {
+    try {
+      return decodeURIComponent(encodedMatch[1].trim());
+    } catch {
+    }
+  }
+  const plainMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  return plainMatch?.[1].trim() || fallback;
+}
+export function getTranscripts() {
+  return apiRequest("/api/transcripts");
+}
+export function getTranscript(id) {
+  return apiRequest(`/api/transcripts/${id}`);
+}
+export function getTranscriptTurns(id) {
+  return apiRequest(`/api/transcripts/${id}/turns`);
+}
+export function processTranscript(id) {
+  return apiRequest(`/api/transcripts/${id}/process-all`, {
+    method: "POST"
+  });
+}
+export function getProcessingStatus(id) {
+  return apiRequest(`/api/transcripts/${id}/processing-status`);
+}
+export function getPipelineDiagnostics(id) {
+  return apiRequest(`/api/transcripts/${id}/diagnostics`);
+}
+export function getFinalSignals(id) {
+  return apiRequest(`/api/transcripts/${id}/final-signals`);
+}
+export function getAnalysisRuns(id) {
+  return apiRequest(`/api/transcripts/${id}/runs`);
+}
+export function getRunFinalSignals(runId) {
+  return apiRequest(`/api/runs/${runId}/final-signals`);
+}
+export function replayValidation(runId) {
+  return apiRequest(`/api/runs/${runId}/replay-validation`, { method: "POST" });
+}
+export function getCandidates(id) {
+  return apiRequest(`/api/transcripts/${id}/candidates`);
+}
+export async function downloadTranscriptExport(id, format) {
+  let response;
+  try {
+    response = await fetch(
+      `${API_BASE_URL}/api/transcripts/${id}/export.${format}?debug=false`,
+      { headers: { Accept: format === "csv" ? "text/csv" : "application/jsonl" } }
+    );
+  } catch {
+    throw new ApiError(
+      "Could not reach the SignalBridge API. Confirm the backend is running.",
+      0
+    );
+  }
+  if (!response.ok) {
+    let message = `The export request returned status ${response.status}.`;
+    try {
+      const body = await response.json();
+      if (body.detail)
+        message = body.detail;
+    } catch {
+    }
+    throw new ApiError(message, response.status);
+  }
+  const blob = await response.blob();
+  const fallback = `transcript-${id}-signals.${format}`;
+  const filename = getDownloadFilename(
+    response.headers.get("Content-Disposition"),
+    fallback
+  );
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+  return { filename, size: blob.size };
+}
+export function uploadTranscript(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiRequest("/api/transcripts/upload", {
+    method: "POST",
+    body: formData
+  });
+}
+
+/*{
+  "version": 3,
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/api/transcripts.ts"
+  ],
+  "sourcesContent": [
+    "import { API_BASE_URL, ApiError, apiRequest } from './client'\nimport type {\n  Transcript,\n  TranscriptDetail,\n  PipelineRunResponse,\n  FinalSignal,\n  DiagnosticCandidate,\n  TranscriptTurn,\n  TranscriptUploadResponse,\n  ProcessingStatus,\n  PipelineDiagnostics,\n  AnalysisRun,\n} from '../types/transcript'\n\nexport type TranscriptExportFormat = 'csv' | 'jsonl'\n\nexport interface TranscriptDownload {\n  filename: string\n  size: number\n}\n\nfunction getDownloadFilename(\n  contentDisposition: string | null,\n  fallback: string,\n): string {\n  if (!contentDisposition) return fallback\n\n  const encodedMatch = contentDisposition.match(/filename\\*=UTF-8''([^;]+)/i)\n  if (encodedMatch) {\n    try {\n      return decodeURIComponent(encodedMatch[1].trim())\n    } catch {\n      // Fall through to a plain filename or the safe fallback.\n    }\n  }\n\n  const plainMatch = contentDisposition.match(/filename=\"?([^\";]+)\"?/i)\n  return plainMatch?.[1].trim() || fallback\n}\n\nexport function getTranscripts(): Promise<Transcript[]> {\n  return apiRequest<Transcript[]>('/api/transcripts')\n}\n\nexport function getTranscript(id: number): Promise<TranscriptDetail> {\n  return apiRequest<TranscriptDetail>(`/api/transcripts/${id}`)\n}\n\nexport function getTranscriptTurns(id: number): Promise<TranscriptTurn[]> {\n  return apiRequest<TranscriptTurn[]>(`/api/transcripts/${id}/turns`)\n}\n\nexport function processTranscript(id: number): Promise<PipelineRunResponse> {\n  return apiRequest<PipelineRunResponse>(`/api/transcripts/${id}/process-all`, {\n    method: 'POST',\n  })\n}\n\nexport function getProcessingStatus(id: number): Promise<ProcessingStatus> {\n  return apiRequest<ProcessingStatus>(`/api/transcripts/${id}/processing-status`)\n}\n\nexport function getPipelineDiagnostics(id: number): Promise<PipelineDiagnostics> {\n  return apiRequest<PipelineDiagnostics>(`/api/transcripts/${id}/diagnostics`)\n}\n\nexport function getFinalSignals(id: number): Promise<FinalSignal[]> {\n  return apiRequest<FinalSignal[]>(`/api/transcripts/${id}/final-signals`)\n}\n\nexport function getAnalysisRuns(id: number): Promise<AnalysisRun[]> {\n  return apiRequest<AnalysisRun[]>(`/api/transcripts/${id}/runs`)\n}\n\nexport function getRunFinalSignals(runId: string): Promise<FinalSignal[]> {\n  return apiRequest<FinalSignal[]>(`/api/runs/${runId}/final-signals`)\n}\n\nexport function replayValidation(runId: string): Promise<AnalysisRun> {\n  return apiRequest<AnalysisRun>(`/api/runs/${runId}/replay-validation`, { method: 'POST' })\n}\n\nexport function getCandidates(id: number): Promise<DiagnosticCandidate[]> {\n  return apiRequest<DiagnosticCandidate[]>(`/api/transcripts/${id}/candidates`)\n}\n\nexport async function downloadTranscriptExport(\n  id: number,\n  format: TranscriptExportFormat,\n): Promise<TranscriptDownload> {\n  let response: Response\n  try {\n    response = await fetch(\n      `${API_BASE_URL}/api/transcripts/${id}/export.${format}?debug=false`,\n      { headers: { Accept: format === 'csv' ? 'text/csv' : 'application/jsonl' } },\n    )\n  } catch {\n    throw new ApiError(\n      'Could not reach the SignalBridge API. Confirm the backend is running.',\n      0,\n    )\n  }\n\n  if (!response.ok) {\n    let message = `The export request returned status ${response.status}.`\n    try {\n      const body = await response.json() as { detail?: string }\n      if (body.detail) message = body.detail\n    } catch {\n      // Keep the safe status-based message when the response is not JSON.\n    }\n    throw new ApiError(message, response.status)\n  }\n\n  const blob = await response.blob()\n  const fallback = `transcript-${id}-signals.${format}`\n  const filename = getDownloadFilename(\n    response.headers.get('Content-Disposition'),\n    fallback,\n  )\n  const objectUrl = URL.createObjectURL(blob)\n  const link = document.createElement('a')\n  link.href = objectUrl\n  link.download = filename\n  document.body.appendChild(link)\n  link.click()\n  link.remove()\n  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)\n  return { filename, size: blob.size }\n}\n\nexport function uploadTranscript(\n  file: File,\n): Promise<TranscriptUploadResponse> {\n  const formData = new FormData()\n  formData.append('file', file)\n\n  return apiRequest<TranscriptUploadResponse>('/api/transcripts/upload', {\n    method: 'POST',\n    body: formData,\n  })\n}\n"
+  ],
+  "mappings": "AAAA,SAAS,cAAc,UAAU,kBAAkB;AAqBnD,SAAS,oBACP,oBACA,UACQ;AACR,MAAI,CAAC;AAAoB,WAAO;AAEhC,QAAM,eAAe,mBAAmB,MAAM,4BAA4B;AAC1E,MAAI,cAAc;AAChB,QAAI;AACF,aAAO,mBAAmB,aAAa,GAAG,KAAK,CAAC;AAAA,IAClD,QAAE;AAAA,IAEF;AAAA,EACF;AAEA,QAAM,aAAa,mBAAmB,MAAM,wBAAwB;AACpE,SAAO,aAAa,GAAG,KAAK,KAAK;AACnC;AAEO,gBAAS,iBAAwC;AACtD,SAAO,WAAyB,kBAAkB;AACpD;AAEO,gBAAS,cAAc,IAAuC;AACnE,SAAO,WAA6B,oBAAoB,IAAI;AAC9D;AAEO,gBAAS,mBAAmB,IAAuC;AACxE,SAAO,WAA6B,oBAAoB,UAAU;AACpE;AAEO,gBAAS,kBAAkB,IAA0C;AAC1E,SAAO,WAAgC,oBAAoB,kBAAkB;AAAA,IAC3E,QAAQ;AAAA,EACV,CAAC;AACH;AAEO,gBAAS,oBAAoB,IAAuC;AACzE,SAAO,WAA6B,oBAAoB,sBAAsB;AAChF;AAEO,gBAAS,uBAAuB,IAA0C;AAC/E,SAAO,WAAgC,oBAAoB,gBAAgB;AAC7E;AAEO,gBAAS,gBAAgB,IAAoC;AAClE,SAAO,WAA0B,oBAAoB,kBAAkB;AACzE;AAEO,gBAAS,gBAAgB,IAAoC;AAClE,SAAO,WAA0B,oBAAoB,SAAS;AAChE;AAEO,gBAAS,mBAAmB,OAAuC;AACxE,SAAO,WAA0B,aAAa,qBAAqB;AACrE;AAEO,gBAAS,iBAAiB,OAAqC;AACpE,SAAO,WAAwB,aAAa,2BAA2B,EAAE,QAAQ,OAAO,CAAC;AAC3F;AAEO,gBAAS,cAAc,IAA4C;AACxE,SAAO,WAAkC,oBAAoB,eAAe;AAC9E;AAEA,sBAAsB,yBACpB,IACA,QAC6B;AAC7B,MAAI;AACJ,MAAI;AACF,eAAW,MAAM;AAAA,MACf,GAAG,gCAAgC,aAAa;AAAA,MAChD,EAAE,SAAS,EAAE,QAAQ,WAAW,QAAQ,aAAa,oBAAoB,EAAE;AAAA,IAC7E;AAAA,EACF,QAAE;AACA,UAAM,IAAI;AAAA,MACR;AAAA,MACA;AAAA,IACF;AAAA,EACF;AAEA,MAAI,CAAC,SAAS,IAAI;AAChB,QAAI,UAAU,sCAAsC,SAAS;AAC7D,QAAI;AACF,YAAM,OAAO,MAAM,SAAS,KAAK;AACjC,UAAI,KAAK;AAAQ,kBAAU,KAAK;AAAA,IAClC,QAAE;AAAA,IAEF;AACA,UAAM,IAAI,SAAS,SAAS,SAAS,MAAM;AAAA,EAC7C;AAEA,QAAM,OAAO,MAAM,SAAS,KAAK;AACjC,QAAM,WAAW,cAAc,cAAc;AAC7C,QAAM,WAAW;AAAA,IACf,SAAS,QAAQ,IAAI,qBAAqB;AAAA,IAC1C;AAAA,EACF;AACA,QAAM,YAAY,IAAI,gBAAgB,IAAI;AAC1C,QAAM,OAAO,SAAS,cAAc,GAAG;AACvC,OAAK,OAAO;AACZ,OAAK,WAAW;AAChB,WAAS,KAAK,YAAY,IAAI;AAC9B,OAAK,MAAM;AACX,OAAK,OAAO;AACZ,SAAO,WAAW,MAAM,IAAI,gBAAgB,SAAS,GAAG,CAAC;AACzD,SAAO,EAAE,UAAU,MAAM,KAAK,KAAK;AACrC;AAEO,gBAAS,iBACd,MACmC;AACnC,QAAM,WAAW,IAAI,SAAS;AAC9B,WAAS,OAAO,QAAQ,IAAI;AAE5B,SAAO,WAAqC,2BAA2B;AAAA,IACrE,QAAQ;AAAA,IACR,MAAM;AAAA,EACR,CAAC;AACH;",
+  "names": []
+}*/
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvYXBpL3RyYW5zY3JpcHRzLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IEFQSV9CQVNFX1VSTCwgQXBpRXJyb3IsIGFwaVJlcXVlc3QgfSBmcm9tICcuL2NsaWVudCdcbmltcG9ydCB0eXBlIHtcbiAgVHJhbnNjcmlwdCxcbiAgVHJhbnNjcmlwdERldGFpbCxcbiAgUGlwZWxpbmVSdW5SZXNwb25zZSxcbiAgRmluYWxTaWduYWwsXG4gIERpYWdub3N0aWNDYW5kaWRhdGUsXG4gIFRyYW5zY3JpcHRUdXJuLFxuICBUcmFuc2NyaXB0VXBsb2FkUmVzcG9uc2UsXG4gIFByb2Nlc3NpbmdTdGF0dXMsXG4gIFBpcGVsaW5lRGlhZ25vc3RpY3MsXG4gIEFuYWx5c2lzUnVuLFxufSBmcm9tICcuLi90eXBlcy90cmFuc2NyaXB0J1xuXG5leHBvcnQgdHlwZSBUcmFuc2NyaXB0RXhwb3J0Rm9ybWF0ID0gJ2NzdicgfCAnanNvbmwnXG5cbmV4cG9ydCBpbnRlcmZhY2UgVHJhbnNjcmlwdERvd25sb2FkIHtcbiAgZmlsZW5hbWU6IHN0cmluZ1xuICBzaXplOiBudW1iZXJcbn1cblxuZnVuY3Rpb24gZ2V0RG93bmxvYWRGaWxlbmFtZShcbiAgY29udGVudERpc3Bvc2l0aW9uOiBzdHJpbmcgfCBudWxsLFxuICBmYWxsYmFjazogc3RyaW5nLFxuKTogc3RyaW5nIHtcbiAgaWYgKCFjb250ZW50RGlzcG9zaXRpb24pIHJldHVybiBmYWxsYmFja1xuXG4gIGNvbnN0IGVuY29kZWRNYXRjaCA9IGNvbnRlbnREaXNwb3NpdGlvbi5tYXRjaCgvZmlsZW5hbWVcXCo9VVRGLTgnJyhbXjtdKykvaSlcbiAgaWYgKGVuY29kZWRNYXRjaCkge1xuICAgIHRyeSB7XG4gICAgICByZXR1cm4gZGVjb2RlVVJJQ29tcG9uZW50KGVuY29kZWRNYXRjaFsxXS50cmltKCkpXG4gICAgfSBjYXRjaCB7XG4gICAgICAvLyBGYWxsIHRocm91Z2ggdG8gYSBwbGFpbiBmaWxlbmFtZSBvciB0aGUgc2FmZSBmYWxsYmFjay5cbiAgICB9XG4gIH1cblxuICBjb25zdCBwbGFpbk1hdGNoID0gY29udGVudERpc3Bvc2l0aW9uLm1hdGNoKC9maWxlbmFtZT1cIj8oW15cIjtdKylcIj8vaSlcbiAgcmV0dXJuIHBsYWluTWF0Y2g/LlsxXS50cmltKCkgfHwgZmFsbGJhY2tcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldFRyYW5zY3JpcHRzKCk6IFByb21pc2U8VHJhbnNjcmlwdFtdPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PFRyYW5zY3JpcHRbXT4oJy9hcGkvdHJhbnNjcmlwdHMnKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0VHJhbnNjcmlwdChpZDogbnVtYmVyKTogUHJvbWlzZTxUcmFuc2NyaXB0RGV0YWlsPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PFRyYW5zY3JpcHREZXRhaWw+KGAvYXBpL3RyYW5zY3JpcHRzLyR7aWR9YClcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldFRyYW5zY3JpcHRUdXJucyhpZDogbnVtYmVyKTogUHJvbWlzZTxUcmFuc2NyaXB0VHVybltdPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PFRyYW5zY3JpcHRUdXJuW10+KGAvYXBpL3RyYW5zY3JpcHRzLyR7aWR9L3R1cm5zYClcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHByb2Nlc3NUcmFuc2NyaXB0KGlkOiBudW1iZXIpOiBQcm9taXNlPFBpcGVsaW5lUnVuUmVzcG9uc2U+IHtcbiAgcmV0dXJuIGFwaVJlcXVlc3Q8UGlwZWxpbmVSdW5SZXNwb25zZT4oYC9hcGkvdHJhbnNjcmlwdHMvJHtpZH0vcHJvY2Vzcy1hbGxgLCB7XG4gICAgbWV0aG9kOiAnUE9TVCcsXG4gIH0pXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRQcm9jZXNzaW5nU3RhdHVzKGlkOiBudW1iZXIpOiBQcm9taXNlPFByb2Nlc3NpbmdTdGF0dXM+IHtcbiAgcmV0dXJuIGFwaVJlcXVlc3Q8UHJvY2Vzc2luZ1N0YXR1cz4oYC9hcGkvdHJhbnNjcmlwdHMvJHtpZH0vcHJvY2Vzc2luZy1zdGF0dXNgKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0UGlwZWxpbmVEaWFnbm9zdGljcyhpZDogbnVtYmVyKTogUHJvbWlzZTxQaXBlbGluZURpYWdub3N0aWNzPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PFBpcGVsaW5lRGlhZ25vc3RpY3M+KGAvYXBpL3RyYW5zY3JpcHRzLyR7aWR9L2RpYWdub3N0aWNzYClcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldEZpbmFsU2lnbmFscyhpZDogbnVtYmVyKTogUHJvbWlzZTxGaW5hbFNpZ25hbFtdPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PEZpbmFsU2lnbmFsW10+KGAvYXBpL3RyYW5zY3JpcHRzLyR7aWR9L2ZpbmFsLXNpZ25hbHNgKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0QW5hbHlzaXNSdW5zKGlkOiBudW1iZXIpOiBQcm9taXNlPEFuYWx5c2lzUnVuW10+IHtcbiAgcmV0dXJuIGFwaVJlcXVlc3Q8QW5hbHlzaXNSdW5bXT4oYC9hcGkvdHJhbnNjcmlwdHMvJHtpZH0vcnVuc2ApXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRSdW5GaW5hbFNpZ25hbHMocnVuSWQ6IHN0cmluZyk6IFByb21pc2U8RmluYWxTaWduYWxbXT4ge1xuICByZXR1cm4gYXBpUmVxdWVzdDxGaW5hbFNpZ25hbFtdPihgL2FwaS9ydW5zLyR7cnVuSWR9L2ZpbmFsLXNpZ25hbHNgKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gcmVwbGF5VmFsaWRhdGlvbihydW5JZDogc3RyaW5nKTogUHJvbWlzZTxBbmFseXNpc1J1bj4ge1xuICByZXR1cm4gYXBpUmVxdWVzdDxBbmFseXNpc1J1bj4oYC9hcGkvcnVucy8ke3J1bklkfS9yZXBsYXktdmFsaWRhdGlvbmAsIHsgbWV0aG9kOiAnUE9TVCcgfSlcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGdldENhbmRpZGF0ZXMoaWQ6IG51bWJlcik6IFByb21pc2U8RGlhZ25vc3RpY0NhbmRpZGF0ZVtdPiB7XG4gIHJldHVybiBhcGlSZXF1ZXN0PERpYWdub3N0aWNDYW5kaWRhdGVbXT4oYC9hcGkvdHJhbnNjcmlwdHMvJHtpZH0vY2FuZGlkYXRlc2ApXG59XG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBkb3dubG9hZFRyYW5zY3JpcHRFeHBvcnQoXG4gIGlkOiBudW1iZXIsXG4gIGZvcm1hdDogVHJhbnNjcmlwdEV4cG9ydEZvcm1hdCxcbik6IFByb21pc2U8VHJhbnNjcmlwdERvd25sb2FkPiB7XG4gIGxldCByZXNwb25zZTogUmVzcG9uc2VcbiAgdHJ5IHtcbiAgICByZXNwb25zZSA9IGF3YWl0IGZldGNoKFxuICAgICAgYCR7QVBJX0JBU0VfVVJMfS9hcGkvdHJhbnNjcmlwdHMvJHtpZH0vZXhwb3J0LiR7Zm9ybWF0fT9kZWJ1Zz1mYWxzZWAsXG4gICAgICB7IGhlYWRlcnM6IHsgQWNjZXB0OiBmb3JtYXQgPT09ICdjc3YnID8gJ3RleHQvY3N2JyA6ICdhcHBsaWNhdGlvbi9qc29ubCcgfSB9LFxuICAgIClcbiAgfSBjYXRjaCB7XG4gICAgdGhyb3cgbmV3IEFwaUVycm9yKFxuICAgICAgJ0NvdWxkIG5vdCByZWFjaCB0aGUgU2lnbmFsQnJpZGdlIEFQSS4gQ29uZmlybSB0aGUgYmFja2VuZCBpcyBydW5uaW5nLicsXG4gICAgICAwLFxuICAgIClcbiAgfVxuXG4gIGlmICghcmVzcG9uc2Uub2spIHtcbiAgICBsZXQgbWVzc2FnZSA9IGBUaGUgZXhwb3J0IHJlcXVlc3QgcmV0dXJuZWQgc3RhdHVzICR7cmVzcG9uc2Uuc3RhdHVzfS5gXG4gICAgdHJ5IHtcbiAgICAgIGNvbnN0IGJvZHkgPSBhd2FpdCByZXNwb25zZS5qc29uKCkgYXMgeyBkZXRhaWw/OiBzdHJpbmcgfVxuICAgICAgaWYgKGJvZHkuZGV0YWlsKSBtZXNzYWdlID0gYm9keS5kZXRhaWxcbiAgICB9IGNhdGNoIHtcbiAgICAgIC8vIEtlZXAgdGhlIHNhZmUgc3RhdHVzLWJhc2VkIG1lc3NhZ2Ugd2hlbiB0aGUgcmVzcG9uc2UgaXMgbm90IEpTT04uXG4gICAgfVxuICAgIHRocm93IG5ldyBBcGlFcnJvcihtZXNzYWdlLCByZXNwb25zZS5zdGF0dXMpXG4gIH1cblxuICBjb25zdCBibG9iID0gYXdhaXQgcmVzcG9uc2UuYmxvYigpXG4gIGNvbnN0IGZhbGxiYWNrID0gYHRyYW5zY3JpcHQtJHtpZH0tc2lnbmFscy4ke2Zvcm1hdH1gXG4gIGNvbnN0IGZpbGVuYW1lID0gZ2V0RG93bmxvYWRGaWxlbmFtZShcbiAgICByZXNwb25zZS5oZWFkZXJzLmdldCgnQ29udGVudC1EaXNwb3NpdGlvbicpLFxuICAgIGZhbGxiYWNrLFxuICApXG4gIGNvbnN0IG9iamVjdFVybCA9IFVSTC5jcmVhdGVPYmplY3RVUkwoYmxvYilcbiAgY29uc3QgbGluayA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2EnKVxuICBsaW5rLmhyZWYgPSBvYmplY3RVcmxcbiAgbGluay5kb3dubG9hZCA9IGZpbGVuYW1lXG4gIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQobGluaylcbiAgbGluay5jbGljaygpXG4gIGxpbmsucmVtb3ZlKClcbiAgd2luZG93LnNldFRpbWVvdXQoKCkgPT4gVVJMLnJldm9rZU9iamVjdFVSTChvYmplY3RVcmwpLCAwKVxuICByZXR1cm4geyBmaWxlbmFtZSwgc2l6ZTogYmxvYi5zaXplIH1cbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHVwbG9hZFRyYW5zY3JpcHQoXG4gIGZpbGU6IEZpbGUsXG4pOiBQcm9taXNlPFRyYW5zY3JpcHRVcGxvYWRSZXNwb25zZT4ge1xuICBjb25zdCBmb3JtRGF0YSA9IG5ldyBGb3JtRGF0YSgpXG4gIGZvcm1EYXRhLmFwcGVuZCgnZmlsZScsIGZpbGUpXG5cbiAgcmV0dXJuIGFwaVJlcXVlc3Q8VHJhbnNjcmlwdFVwbG9hZFJlc3BvbnNlPignL2FwaS90cmFuc2NyaXB0cy91cGxvYWQnLCB7XG4gICAgbWV0aG9kOiAn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

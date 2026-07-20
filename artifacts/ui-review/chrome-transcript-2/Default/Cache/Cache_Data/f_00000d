@@ -1,0 +1,316 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/DiagnosticCandidateCard.tsx");import RefreshRuntime from "/@react-refresh";
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("@vitejs/plugin-react can't detect preamble. Something is wrong. See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201");
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    RefreshRuntime.register(type, "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/DiagnosticCandidateCard.tsx " + id);
+  };
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _jsxFileName = "D:\\WorkSpace\\Optimize_Finance\\signalbridge\\frontend\\src\\components\\DiagnosticCandidateCard.tsx";
+import { StatusBadge } from "/src/components/StatusBadge.tsx";
+import __vite__cjsImport3_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=165d986c"; const _jsxDEV = __vite__cjsImport3_react_jsxDevRuntime["jsxDEV"];
+function formatScore(value) {
+  return value === null ? "N/A" : value.toFixed(2);
+}
+export function DiagnosticCandidateCard({
+  candidate
+}) {
+  return /* @__PURE__ */ _jsxDEV("details", {
+    className: "candidate-row",
+    children: [/* @__PURE__ */ _jsxDEV("summary", {
+      children: [/* @__PURE__ */ _jsxDEV("span", {
+        className: `candidate-row__type candidate-row__type--${candidate.item_type}`,
+        children: candidate.item_type
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 16,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("strong", {
+        children: candidate.category
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 17,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV(StatusBadge, {
+        value: candidate.validator_verdict
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 18,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("span", {
+        children: candidate.is_canonical ? "Canonical" : "Duplicate"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 19,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("span", {
+        "aria-hidden": "true",
+        children: "\u2304"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 20,
+        columnNumber: 9
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 15,
+      columnNumber: 7
+    }, this), /* @__PURE__ */ _jsxDEV("div", {
+      className: "candidate-row__details",
+      children: [/* @__PURE__ */ _jsxDEV("blockquote", {
+        children: ["\u201C", candidate.advisor_quote, "\u201D"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 23,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("p", {
+        children: candidate.rationale
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 24,
+        columnNumber: 9
+      }, this), /* @__PURE__ */ _jsxDEV("dl", {
+        children: [/* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Candidate"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 26,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: candidate.id
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 26,
+            columnNumber: 34
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 26,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Timestamp"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 27,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: candidate.timestamp ?? "None"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 27,
+            columnNumber: 34
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 27,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Rejection"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 28,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: candidate.rejection_reason ?? "None"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 28,
+            columnNumber: 34
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 28,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Support"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 29,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: formatScore(candidate.support_score)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 29,
+            columnNumber: 32
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 29,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Advisor-side"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 30,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: formatScore(candidate.advisor_side_score)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 30,
+            columnNumber: 37
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 30,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "False-positive risk"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 31,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: formatScore(candidate.false_positive_risk)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 31,
+            columnNumber: 44
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 31,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Final score"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 32,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: formatScore(candidate.final_score)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 32,
+            columnNumber: 36
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 32,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Duplicate group"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 33,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: candidate.duplicate_group_id ?? "None"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 33,
+            columnNumber: 40
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 33,
+          columnNumber: 11
+        }, this), /* @__PURE__ */ _jsxDEV("div", {
+          children: [/* @__PURE__ */ _jsxDEV("dt", {
+            children: "Source turns"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 34,
+            columnNumber: 16
+          }, this), /* @__PURE__ */ _jsxDEV("dd", {
+            children: candidate.source_turn_ids?.length ? candidate.source_turn_ids.join(", ") : "None"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 34,
+            columnNumber: 37
+          }, this)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 34,
+          columnNumber: 11
+        }, this)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 25,
+        columnNumber: 9
+      }, this)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 22,
+      columnNumber: 7
+    }, this)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 14,
+    columnNumber: 5
+  }, this);
+}
+_c = DiagnosticCandidateCard;
+var _c;
+$RefreshReg$(_c, "DiagnosticCandidateCard");
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+  import.meta.hot.accept();
+  if (!window.__vite_plugin_react_timeout) {
+    window.__vite_plugin_react_timeout = setTimeout(() => {
+      window.__vite_plugin_react_timeout = 0;
+      RefreshRuntime.performReactRefresh();
+    }, 30);
+  }
+}
+
+/*{
+  "version": 3,
+  "mappings": "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",
+  "names": [
+    "StatusBadge",
+    "formatScore",
+    "value",
+    "toFixed",
+    "DiagnosticCandidateCard",
+    "candidate",
+    "_jsxDEV",
+    "className",
+    "children",
+    "item_type",
+    "_jsxFileName",
+    "category",
+    "validator_verdict",
+    "is_canonical",
+    "advisor_quote",
+    "rationale",
+    "id",
+    "timestamp",
+    "rejection_reason",
+    "support_score",
+    "advisor_side_score",
+    "false_positive_risk",
+    "final_score",
+    "duplicate_group_id",
+    "source_turn_ids",
+    "length",
+    "join",
+    "_c",
+    "$RefreshReg$"
+  ],
+  "sources": [
+    "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/DiagnosticCandidateCard.tsx"
+  ],
+  "file": "D:/WorkSpace/Optimize_Finance/signalbridge/frontend/src/components/DiagnosticCandidateCard.tsx",
+  "sourcesContent": [
+    "import type { DiagnosticCandidate } from '../types/transcript'\nimport { StatusBadge } from './StatusBadge'\n\ninterface DiagnosticCandidateCardProps {\n  candidate: DiagnosticCandidate\n}\n\nfunction formatScore(value: number | null): string {\n  return value === null ? 'N/A' : value.toFixed(2)\n}\n\nexport function DiagnosticCandidateCard({ candidate }: DiagnosticCandidateCardProps) {\n  return (\n    <details className=\"candidate-row\">\n      <summary>\n        <span className={`candidate-row__type candidate-row__type--${candidate.item_type}`}>{candidate.item_type}</span>\n        <strong>{candidate.category}</strong>\n        <StatusBadge value={candidate.validator_verdict} />\n        <span>{candidate.is_canonical ? 'Canonical' : 'Duplicate'}</span>\n        <span aria-hidden=\"true\">⌄</span>\n      </summary>\n      <div className=\"candidate-row__details\">\n        <blockquote>“{candidate.advisor_quote}”</blockquote>\n        <p>{candidate.rationale}</p>\n        <dl>\n          <div><dt>Candidate</dt><dd>{candidate.id}</dd></div>\n          <div><dt>Timestamp</dt><dd>{candidate.timestamp ?? 'None'}</dd></div>\n          <div><dt>Rejection</dt><dd>{candidate.rejection_reason ?? 'None'}</dd></div>\n          <div><dt>Support</dt><dd>{formatScore(candidate.support_score)}</dd></div>\n          <div><dt>Advisor-side</dt><dd>{formatScore(candidate.advisor_side_score)}</dd></div>\n          <div><dt>False-positive risk</dt><dd>{formatScore(candidate.false_positive_risk)}</dd></div>\n          <div><dt>Final score</dt><dd>{formatScore(candidate.final_score)}</dd></div>\n          <div><dt>Duplicate group</dt><dd>{candidate.duplicate_group_id ?? 'None'}</dd></div>\n          <div><dt>Source turns</dt><dd>{candidate.source_turn_ids?.length ? candidate.source_turn_ids.join(', ') : 'None'}</dd></div>\n        </dl>\n      </div>\n    </details>\n  )\n}\n"
+  ]
+}*/
+
+//# sourceMappingURL=data:application/json;base64,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QUM7QUFBQTtBQUFBWDtBQUFBO0FBQUEsaUJBQUssQ0FBQztBQUFBO0FBQUE7QUFBQUE7QUFBQTtBQUFBLGVBQUssR0FDM0ZKO0FBQUEscUJBQUtBO0FBQUEsc0JBQUk7QUFBQSxVQUFXO0FBQUE7QUFBQUk7QUFBQTtBQUFBLGlCQUFJLEdBQUNKO0FBQUEsc0JBQUtMLFlBQVlJLFVBQVVpQixXQUFXO0FBQUEsVUFBQztBQUFBO0FBQUFaO0FBQUE7QUFBQSxpQkFBSyxDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsZUFBSyxHQUMzRUo7QUFBQSxxQkFBS0E7QUFBQSxzQkFBSTtBQUFBLFVBQWU7QUFBQTtBQUFBSTtBQUFBO0FBQUEsaUJBQUksR0FBQ0o7QUFBQSxzQkFBS0QsVUFBVWtCLHNCQUFzQjtBQUFBLFVBQU07QUFBQTtBQUFBYjtBQUFBO0FBQUEsaUJBQUssQ0FBQztBQUFBO0FBQUE7QUFBQUE7QUFBQTtBQUFBLGVBQUssR0FDbkZKO0FBQUEscUJBQUtBO0FBQUEsc0JBQUk7QUFBQSxVQUFZO0FBQUE7QUFBQUk7QUFBQTtBQUFBLGlCQUFJLEdBQUNKO0FBQUEsc0JBQUtELFVBQVVtQixpQkFBaUJDLFNBQVNwQixVQUFVbUIsZ0JBQWdCRSxLQUFLLElBQUksSUFBSTtBQUFBLFVBQU07QUFBQTtBQUFBaEI7QUFBQTtBQUFBLGlCQUFLLENBQUM7QUFBQTtBQUFBO0FBQUFBO0FBQUE7QUFBQSxlQUFLLENBQUM7QUFBQTtBQUFBO0FBQUFBO0FBQUE7QUFBQSxhQUMxSCxDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsV0FDRixDQUFDO0FBQUE7QUFBQTtBQUFBQTtBQUFBO0FBQUEsU0FDQztBQUViO0FBQUNpQixLQTNCZXZCO0FBQXVCO0FBQUF3QiIsIm5hbWVzIjpbIlN0YXR1c0JhZGdlIiwiZm9ybWF0U2NvcmUiLCJ2YWx1ZSIsInRvRml4ZWQiLCJEaWFnbm9zdGljQ2FuZGlkYXRlQ2FyZCIsImNhbmRpZGF0ZSIsIl9qc3hERVYiLCJjbGFzc05hbWUiLCJjaGlsZHJlbiIsIml0ZW1fdHlwZSIsIl9qc3hGaWxlTmFtZSIsImNhdGVnb3J5IiwidmFsaWRhdG9yX3ZlcmRpY3QiLCJpc19jYW5vbmljYWwiLCJhZHZpc29yX3F1b3RlIiwicmF0aW9uYWxlIiwiaWQiLCJ0aW1lc3RhbXAiLCJyZWplY3Rpb25fcmVhc29uIiwic3VwcG9ydF9zY29yZSIsImFkdmlzb3Jfc2lkZV9zY29yZSIsImZhbHNlX3Bvc2l0aXZlX3Jpc2siLCJmaW5hbF9zY29yZSIsImR1cGxpY2F0ZV9ncm91cF9pZCIsInNvdXJjZV90dXJuX2lkcyIsImxlbmd0aCIsImpvaW4iLCJfYyIsIiRSZWZyZXNoUmVnJCJdLCJzb3VyY2VzIjpbIkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9EaWFnbm9zdGljQ2FuZGlkYXRlQ2FyZC50c3giXSwiZmlsZSI6IkQ6L1dvcmtTcGFjZS9PcHRpbWl6ZV9GaW5hbmNlL3NpZ25hbGJyaWRnZS9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9EaWFnbm9zdGljQ2FuZGlkYXRlQ2FyZC50c3giLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgdHlwZSB7IERpYWdub3N0aWNDYW5kaWRhdGUgfSBmcm9tICcuLi90eXBlcy90cmFuc2NyaXB0J1xuaW1wb3J0IHsgU3RhdHVzQmFkZ2UgfSBmcm9tICcuL1N0YXR1c0JhZGdlJ1xuXG5pbnRlcmZhY2UgRGlhZ25vc3RpY0NhbmRpZGF0ZUNhcmRQcm9wcyB7XG4gIGNhbmRpZGF0ZTogRGlhZ25vc3RpY0NhbmRpZGF0ZVxufVxuXG5mdW5jdGlvbiBmb3JtYXRTY29yZSh2YWx1ZTogbnVtYmVyIHwgbnVsbCk6IHN0cmluZyB7XG4gIHJldHVybiB2YWx1ZSA9PT0gbnVsbCA/ICdOL0EnIDogdmFsdWUudG9GaXhlZCgyKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gRGlhZ25vc3RpY0NhbmRpZGF0ZUNhcmQoeyBjYW5kaWRhdGUgfTogRGlhZ25vc3RpY0NhbmRpZGF0ZUNhcmRQcm9wcykge1xuICByZXR1cm4gKFxuICAgIDxkZXRhaWxzIGNsYXNzTmFtZT1cImNhbmRpZGF0ZS1yb3dcIj5cbiAgICAgIDxzdW1tYXJ5PlxuICAgICAgICA8c3BhbiBjbGFzc05hbWU9e2BjYW5kaWRhdGUtcm93X190eXBlIGNhbmRpZGF0ZS1yb3dfX3R5cGUtLSR7Y2FuZGlkYXRlLml0ZW1fdHlwZX1gfT57Y2FuZGlkYXRlLml0ZW1fdHlwZX08L3NwYW4+XG4gICAgICAgIDxzdHJvbmc+e2NhbmRpZGF0ZS5jYXRlZ29yeX08L3N0cm9uZz5cbiAgICAgICAgPFN0YXR1c0JhZGdlIHZhbHVlPXtjYW5kaWRhdGUudmFsaWRhdG9yX3ZlcmRpY3R9IC8+XG4gICAgICAgIDxzcGFuPntjYW5kaWRhdGUuaXNfY2Fub25pY2FsID8gJ0Nhbm9uaWNhbCcgOiAnRHVwbGljYXRlJ308L3NwYW4+XG4gICAgICAgIDxzcGFuIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPuKMhDwvc3Bhbj5cbiAgICAgIDwvc3VtbWFyeT5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FuZGlkYXRlLXJvd19fZGV0YWlsc1wiPlxuICAgICAgICA8YmxvY2txdW90ZT7igJx7Y2FuZGlkYXRlLmFkdmlzb3JfcXVvdGV94oCdPC9ibG9ja3F1b3RlPlxuICAgICAgICA8cD57Y2FuZGlkYXRlLnJhdGlvbmFsZX08L3A+XG4gICAgICAgIDxkbD5cbiAgICAgICAgICA8ZGl2PjxkdD5DYW5kaWRhdGU8L2R0PjxkZD57Y2FuZGlkYXRlLmlkfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+VGltZXN0YW1wPC9kdD48ZGQ+e2NhbmRpZGF0ZS50aW1lc3RhbXAgPz8gJ05vbmUnfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+UmVqZWN0aW9uPC9kdD48ZGQ+e2NhbmRpZGF0ZS5yZWplY3Rpb25fcmVhc29uID8/ICdOb25lJ308L2RkPjwvZGl2PlxuICAgICAgICAgIDxkaXY+PGR0PlN1cHBvcnQ8L2R0PjxkZD57Zm9ybWF0U2NvcmUoY2FuZGlkYXRlLnN1cHBvcnRfc2NvcmUpfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+QWR2aXNvci1zaWRlPC9kdD48ZGQ+e2Zvcm1hdFNjb3JlKGNhbmRpZGF0ZS5hZHZpc29yX3NpZGVfc2NvcmUpfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+RmFsc2UtcG9zaXRpdmUgcmlzazwvZHQ+PGRkPntmb3JtYXRTY29yZShjYW5kaWRhdGUuZmFsc2VfcG9zaXRpdmVfcmlzayl9PC9kZD48L2Rpdj5cbiAgICAgICAgICA8ZGl2PjxkdD5GaW5hbCBzY29yZTwvZHQ+PGRkPntmb3JtYXRTY29yZShjYW5kaWRhdGUuZmluYWxfc2NvcmUpfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+RHVwbGljYXRlIGdyb3VwPC9kdD48ZGQ+e2NhbmRpZGF0ZS5kdXBsaWNhdGVfZ3JvdXBfaWQgPz8gJ05vbmUnfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgPGRpdj48ZHQ+U291cmNlIHR1cm5zPC9kdD48ZGQ+e2NhbmRpZGF0ZS5zb3VyY2VfdHVybl9pZHM/Lmxlbmd0aCA/IGNhbmRpZGF0ZS5zb3VyY2VfdHVybl9pZHMuam9pbignLCAnKSA6ICdOb25lJ308L2RkPjwvZGl2PlxuICAgICAgICA8L2RsPlxuICAgICAgPC9kaXY+XG4gICAgPC9kZXRhaWxzPlxuICApXG59XG4iXX0=

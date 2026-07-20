@@ -47,7 +47,7 @@ CALIBRATION EXAMPLES
 - "That's amazing. So there's no cost to operating here?" -> driver, positive operating-cost reaction.
 - "I'm used to having endless digital files ... so that my compliance is right" -> blocker, documentation/compliance workflow concern; do not call it mandatory.
 - "Do we get copies sent to us of everything?" -> blocker, unresolved record-access need; do not claim it prevents proceeding.
-- "I'm worried about that ... I'm not anywhere near that threshold" -> blocker, eligibility-threshold concern.
+- "I am concerned that my practice is below the required eligibility threshold." -> blocker, eligibility-threshold concern.
 - "I want to review the materials again ... take the weekend and think" -> driver, continued evaluation / next-step intent, with implied strength.
 - "Can you do Tuesday afternoon?" -> no_signal, scheduling only.
 
