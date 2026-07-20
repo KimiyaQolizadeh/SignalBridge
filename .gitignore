@@ -1,0 +1,64 @@
+# Secrets and local configuration
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# JavaScript / build output
+node_modules/
+dist/
+build/
+
+# Confidential transcript data and generated outputs
+data/transcripts/
+data/outputs/
+data/model-cache/
+
+# Data exports are ignored everywhere except sample_data directories
+*.csv
+*.jsonl
+*transcript*.txt
+*transcript*.json
+!sample_data/
+!sample_data/**
+!**/sample_data/
+!**/sample_data/**
+
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local databases and runtime state
+*.db
+*.sqlite
+*.sqlite3
+postgres-data/
+data/db/
+data/postgres/
+
+# Logs
+*.log
+logs/
+
+# IDE and OS metadata
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Tooling and analysis caches
+.agents/
+.codex/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+uploads/
+exports/
